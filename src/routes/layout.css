@@ -1,0 +1,261 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* iOS-style Design System */
+:root {
+	/* iOS uses larger radius for that soft, rounded look */
+	--radius: 0.875rem;
+
+	/* iOS Light Mode Colors - Clean, bright, and airy */
+	--background: oklch(0.985 0 0);
+	--foreground: oklch(0.145 0.004 285.823);
+
+	/* Cards with subtle warmth */
+	--card: oklch(1 0 0);
+	--card-foreground: oklch(0.145 0.004 285.823);
+
+	/* Popovers with frosted glass feel */
+	--popover: oklch(0.995 0.002 106.423 / 95%);
+	--popover-foreground: oklch(0.145 0.004 285.823);
+
+	/* iOS System Blue */
+	--primary: oklch(0.623 0.214 250.115);
+	--primary-foreground: oklch(0.99 0 0);
+
+	/* iOS Gray for secondary elements */
+	--secondary: oklch(0.955 0.005 264.531);
+	--secondary-foreground: oklch(0.25 0.006 285.885);
+
+	/* Muted backgrounds */
+	--muted: oklch(0.968 0.003 264.531);
+	--muted-foreground: oklch(0.45 0.014 264.531);
+
+	/* Accent similar to primary for iOS consistency */
+	--accent: oklch(0.955 0.005 264.531);
+	--accent-foreground: oklch(0.25 0.006 285.885);
+
+	/* iOS System Red */
+	--destructive: oklch(0.628 0.258 29.234);
+
+	/* Softer borders for iOS feel */
+	--border: oklch(0.91 0.002 264.531);
+	--input: oklch(0.93 0.002 264.531);
+	--ring: oklch(0.623 0.214 250.115);
+
+	/* iOS-inspired chart colors */
+	--chart-1: oklch(0.623 0.214 250.115);
+	--chart-2: oklch(0.715 0.143 164.102);
+	--chart-3: oklch(0.769 0.188 70.08);
+	--chart-4: oklch(0.705 0.213 47.604);
+	--chart-5: oklch(0.628 0.258 29.234);
+
+	/* iOS-style sidebar */
+	--sidebar: oklch(0.978 0.002 264.531);
+	--sidebar-foreground: oklch(0.145 0.004 285.823);
+	--sidebar-primary: oklch(0.623 0.214 250.115);
+	--sidebar-primary-foreground: oklch(0.99 0 0);
+	--sidebar-accent: oklch(0.955 0.005 264.531);
+	--sidebar-accent-foreground: oklch(0.25 0.006 285.885);
+	--sidebar-border: oklch(0.91 0.002 264.531);
+	--sidebar-ring: oklch(0.623 0.214 250.115);
+
+	/* Additional iOS system colors */
+	--success: oklch(0.648 0.15 160.913);
+	--success-foreground: oklch(0.99 0 0);
+	--warning: oklch(0.769 0.188 70.08);
+	--warning-foreground: oklch(0.25 0.006 285.885);
+	--info: oklch(0.623 0.214 250.115);
+	--info-foreground: oklch(0.99 0 0);
+}
+
+/* iOS Dark Mode - Deep blacks with vibrant accents */
+.dark {
+	--background: oklch(0 0 0);
+	--foreground: oklch(0.985 0 0);
+
+	/* Elevated cards with subtle gray */
+	--card: oklch(0.145 0.004 264.531);
+	--card-foreground: oklch(0.985 0 0);
+
+	/* Frosted dark glass */
+	--popover: oklch(0.18 0.006 264.531 / 95%);
+	--popover-foreground: oklch(0.985 0 0);
+
+	/* iOS Dark Blue - slightly brighter for contrast */
+	--primary: oklch(0.665 0.236 250.115);
+	--primary-foreground: oklch(0.99 0 0);
+
+	/* Dark mode secondary */
+	--secondary: oklch(0.22 0.008 264.531);
+	--secondary-foreground: oklch(0.92 0 0);
+
+	/* Muted darks */
+	--muted: oklch(0.22 0.008 264.531);
+	--muted-foreground: oklch(0.62 0.012 264.531);
+
+	/* Accent */
+	--accent: oklch(0.22 0.008 264.531);
+	--accent-foreground: oklch(0.92 0 0);
+
+	/* iOS Dark Red */
+	--destructive: oklch(0.68 0.24 25.331);
+
+	/* Subtle dark borders */
+	--border: oklch(1 0 0 / 12%);
+	--input: oklch(1 0 0 / 15%);
+	--ring: oklch(0.665 0.236 250.115);
+
+	/* Dark mode chart colors - more vibrant */
+	--chart-1: oklch(0.665 0.236 250.115);
+	--chart-2: oklch(0.72 0.165 164.102);
+	--chart-3: oklch(0.79 0.195 70.08);
+	--chart-4: oklch(0.73 0.22 47.604);
+	--chart-5: oklch(0.68 0.24 25.331);
+
+	/* Dark sidebar */
+	--sidebar: oklch(0 0 0);
+	--sidebar-foreground: oklch(0.985 0 0);
+	--sidebar-primary: oklch(0.665 0.236 250.115);
+	--sidebar-primary-foreground: oklch(0.99 0 0);
+	--sidebar-accent: oklch(0.22 0.008 264.531);
+	--sidebar-accent-foreground: oklch(0.92 0 0);
+	--sidebar-border: oklch(1 0 0 / 12%);
+	--sidebar-ring: oklch(0.665 0.236 250.115);
+
+	/* Dark mode status colors */
+	--success: oklch(0.72 0.165 160.913);
+	--success-foreground: oklch(0.99 0 0);
+	--warning: oklch(0.79 0.195 70.08);
+	--warning-foreground: oklch(0.15 0 0);
+	--info: oklch(0.665 0.236 250.115);
+	--info-foreground: oklch(0.99 0 0);
+}
+
+@theme inline {
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
+	--color-success: var(--success);
+	--color-success-foreground: var(--success-foreground);
+	--color-warning: var(--warning);
+	--color-warning-foreground: var(--warning-foreground);
+	--color-info: var(--info);
+	--color-info-foreground: var(--info-foreground);
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+
+	html {
+		/* iOS-style smooth scrolling */
+		scroll-behavior: smooth;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	body {
+		@apply bg-background text-foreground;
+		/* SF Pro-like system font stack */
+		font-family:
+			-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto,
+			'Helvetica Neue', Arial, sans-serif;
+		/* iOS-style letter spacing */
+		letter-spacing: -0.01em;
+	}
+
+	/* iOS-style headings with tighter tracking */
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		letter-spacing: -0.025em;
+		font-weight: 600;
+	}
+
+	/* iOS-style focus states */
+	:focus-visible {
+		@apply outline-2 outline-offset-2 outline-ring;
+	}
+}
+
+/* iOS Utility Classes */
+@layer utilities {
+	/* Frosted glass effect */
+	.glass {
+		@apply bg-card/80 backdrop-blur-xl;
+	}
+
+	.glass-light {
+		@apply bg-background/70 backdrop-blur-lg;
+	}
+
+	.glass-dark {
+		@apply bg-card/60 backdrop-blur-2xl;
+	}
+
+	/* iOS-style shadows */
+	.shadow-ios {
+		box-shadow:
+			0 0 0 1px oklch(0 0 0 / 0.04),
+			0 1px 2px oklch(0 0 0 / 0.04),
+			0 4px 8px oklch(0 0 0 / 0.04),
+			0 8px 16px oklch(0 0 0 / 0.04);
+	}
+
+	.shadow-ios-lg {
+		box-shadow:
+			0 0 0 1px oklch(0 0 0 / 0.03),
+			0 2px 4px oklch(0 0 0 / 0.03),
+			0 8px 16px oklch(0 0 0 / 0.06),
+			0 16px 32px oklch(0 0 0 / 0.08);
+	}
+
+	/* iOS-style button press effect */
+	.press-effect {
+		@apply transition-transform duration-150 active:scale-[0.97];
+	}
+
+	/* iOS-style smooth transitions */
+	.transition-ios {
+		transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+	}
+}

@@ -1,0 +1,2941 @@
+{
+	"openapi": "3.1.0",
+	"info": {
+		"title": "ProjectRIMS API",
+		"description": "FastAPI backend for ProjectRIMS CRUD app",
+		"version": "0.1.0"
+	},
+	"paths": {
+		"/auth/login": {
+			"post": {
+				"tags": ["auth"],
+				"summary": "Login",
+				"description": "Authenticate user with email and password.\n\nReturns a JWT access token and user information.",
+				"operationId": "login_auth_login_post",
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/LoginRequest"
+							}
+						}
+					},
+					"required": true
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TokenResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/users": {
+			"get": {
+				"tags": ["users"],
+				"summary": "List Users",
+				"description": "List all users.",
+				"operationId": "list_users_users_get",
+				"parameters": [
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 0,
+							"title": "Skip"
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 100,
+							"title": "Limit"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/UserResponse"
+									},
+									"title": "Response List Users Users Get"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["users"],
+				"summary": "Create User",
+				"description": "Create a new user.",
+				"operationId": "create_user_users_post",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserCreate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/users/{user_id}": {
+			"get": {
+				"tags": ["users"],
+				"summary": "Get User",
+				"description": "Get user by ID.",
+				"operationId": "get_user_users__user_id__get",
+				"parameters": [
+					{
+						"name": "user_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "User Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"tags": ["users"],
+				"summary": "Update User",
+				"description": "Update a user.",
+				"operationId": "update_user_users__user_id__put",
+				"parameters": [
+					{
+						"name": "user_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "User Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserUpdate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": ["users"],
+				"summary": "Delete User",
+				"description": "Delete a user.",
+				"operationId": "delete_user_users__user_id__delete",
+				"parameters": [
+					{
+						"name": "user_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "User Id"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Successful Response"
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/parts": {
+			"get": {
+				"tags": ["parts"],
+				"summary": "List Parts",
+				"description": "List all parts with optional filtering.\n\nstatus_filter options: active, inactive, in_stock, low_stock, out_of_stock",
+				"operationId": "list_parts_parts_get",
+				"parameters": [
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 0,
+							"title": "Skip"
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 100,
+							"title": "Limit"
+						}
+					},
+					{
+						"name": "search",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"title": "Search"
+						}
+					},
+					{
+						"name": "status_filter",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"title": "Status Filter"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/PartResponse"
+									},
+									"title": "Response List Parts Parts Get"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["parts"],
+				"summary": "Create Part",
+				"description": "Create a new part.",
+				"operationId": "create_part_parts_post",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PartCreate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PartResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/parts/{part_id}": {
+			"get": {
+				"tags": ["parts"],
+				"summary": "Get Part",
+				"description": "Get part by ID.",
+				"operationId": "get_part_parts__part_id__get",
+				"parameters": [
+					{
+						"name": "part_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Part Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PartResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"tags": ["parts"],
+				"summary": "Update Part",
+				"description": "Update a part (soft-delete check: only if no transactions exist).",
+				"operationId": "update_part_parts__part_id__put",
+				"parameters": [
+					{
+						"name": "part_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Part Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PartUpdate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PartResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": ["parts"],
+				"summary": "Delete Part",
+				"description": "Soft-delete a part.",
+				"operationId": "delete_part_parts__part_id__delete",
+				"parameters": [
+					{
+						"name": "part_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Part Id"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Successful Response"
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/parts/{part_id}/movements": {
+			"get": {
+				"tags": ["parts"],
+				"summary": "Get Part Movements",
+				"description": "Get movement history for a part.",
+				"operationId": "get_part_movements_parts__part_id__movements_get",
+				"parameters": [
+					{
+						"name": "part_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Part Id"
+						}
+					},
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 0,
+							"title": "Skip"
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 100,
+							"title": "Limit"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/PartMovementResponse"
+									},
+									"title": "Response Get Part Movements Parts  Part Id  Movements Get"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/receivings": {
+			"get": {
+				"tags": ["receivings"],
+				"summary": "List Receivings",
+				"description": "List all receivings with optional filtering.\n\nstatus_filter options: draft, completed, cancelled\npending_gr=true to get receivings awaiting GR confirmation",
+				"operationId": "list_receivings_receivings_get",
+				"parameters": [
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 0,
+							"title": "Skip"
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 100,
+							"title": "Limit"
+						}
+					},
+					{
+						"name": "status_filter",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"title": "Status Filter"
+						}
+					},
+					{
+						"name": "pending_gr",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "boolean",
+							"default": false,
+							"title": "Pending Gr"
+						}
+					},
+					{
+						"name": "doc_number",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"title": "Doc Number"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/ReceivingResponse"
+									},
+									"title": "Response List Receivings Receivings Get"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["receivings"],
+				"summary": "Create Receiving",
+				"description": "Create a new receiving in draft status.",
+				"operationId": "create_receiving_receivings_post",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ReceivingCreate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ReceivingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/receivings/{receiving_id}": {
+			"get": {
+				"tags": ["receivings"],
+				"summary": "Get Receiving",
+				"description": "Get receiving with nested items.",
+				"operationId": "get_receiving_receivings__receiving_id__get",
+				"parameters": [
+					{
+						"name": "receiving_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Receiving Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ReceivingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"tags": ["receivings"],
+				"summary": "Update Receiving",
+				"description": "Update a receiving (only if is_editable).",
+				"operationId": "update_receiving_receivings__receiving_id__put",
+				"parameters": [
+					{
+						"name": "receiving_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Receiving Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ReceivingUpdate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ReceivingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": ["receivings"],
+				"summary": "Delete Receiving",
+				"description": "Soft-delete a receiving.",
+				"operationId": "delete_receiving_receivings__receiving_id__delete",
+				"parameters": [
+					{
+						"name": "receiving_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Receiving Id"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Successful Response"
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/receivings/{receiving_id}/complete": {
+			"put": {
+				"tags": ["receivings"],
+				"summary": "Complete Receiving",
+				"description": "Complete a receiving (draft → completed).\n\nCreates PartMovements for all items and updates part stock.",
+				"operationId": "complete_receiving_receivings__receiving_id__complete_put",
+				"parameters": [
+					{
+						"name": "receiving_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Receiving Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ReceivingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/receivings/{receiving_id}/cancel": {
+			"put": {
+				"tags": ["receivings"],
+				"summary": "Cancel Receiving",
+				"description": "Cancel a receiving (transitions status → cancelled).",
+				"operationId": "cancel_receiving_receivings__receiving_id__cancel_put",
+				"parameters": [
+					{
+						"name": "receiving_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Receiving Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ReceivingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/receivings/{receiving_id}/confirm-gr": {
+			"put": {
+				"tags": ["receivings"],
+				"summary": "Confirm Gr",
+				"description": "Confirm receiving as Goods Receipt (GR).",
+				"operationId": "confirm_gr_receivings__receiving_id__confirm_gr_put",
+				"parameters": [
+					{
+						"name": "receiving_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Receiving Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ReceivingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/outgoings": {
+			"get": {
+				"tags": ["outgoings"],
+				"summary": "List Outgoings",
+				"description": "List all outgoings with optional filtering.\n\nstatus_filter options: draft, completed, cancelled\npending_gi=true to get outgoings awaiting GI confirmation",
+				"operationId": "list_outgoings_outgoings_get",
+				"parameters": [
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 0,
+							"title": "Skip"
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 100,
+							"title": "Limit"
+						}
+					},
+					{
+						"name": "status_filter",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"title": "Status Filter"
+						}
+					},
+					{
+						"name": "pending_gi",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "boolean",
+							"default": false,
+							"title": "Pending Gi"
+						}
+					},
+					{
+						"name": "doc_number",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"title": "Doc Number"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/OutgoingResponse"
+									},
+									"title": "Response List Outgoings Outgoings Get"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["outgoings"],
+				"summary": "Create Outgoing",
+				"description": "Create a new outgoing in draft status.",
+				"operationId": "create_outgoing_outgoings_post",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/OutgoingCreate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OutgoingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/outgoings/{outgoing_id}": {
+			"get": {
+				"tags": ["outgoings"],
+				"summary": "Get Outgoing",
+				"description": "Get outgoing with nested items.",
+				"operationId": "get_outgoing_outgoings__outgoing_id__get",
+				"parameters": [
+					{
+						"name": "outgoing_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Outgoing Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OutgoingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"tags": ["outgoings"],
+				"summary": "Update Outgoing",
+				"description": "Update an outgoing (only if is_editable).",
+				"operationId": "update_outgoing_outgoings__outgoing_id__put",
+				"parameters": [
+					{
+						"name": "outgoing_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Outgoing Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/OutgoingUpdate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OutgoingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": ["outgoings"],
+				"summary": "Delete Outgoing",
+				"description": "Soft-delete an outgoing.",
+				"operationId": "delete_outgoing_outgoings__outgoing_id__delete",
+				"parameters": [
+					{
+						"name": "outgoing_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Outgoing Id"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Successful Response"
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/outgoings/{outgoing_id}/complete": {
+			"put": {
+				"tags": ["outgoings"],
+				"summary": "Complete Outgoing",
+				"description": "Complete an outgoing (draft → completed).\n\nValidates sufficient stock, creates PartMovements, and updates part stock.",
+				"operationId": "complete_outgoing_outgoings__outgoing_id__complete_put",
+				"parameters": [
+					{
+						"name": "outgoing_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Outgoing Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OutgoingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/outgoings/{outgoing_id}/cancel": {
+			"put": {
+				"tags": ["outgoings"],
+				"summary": "Cancel Outgoing",
+				"description": "Cancel an outgoing (transitions status → cancelled).",
+				"operationId": "cancel_outgoing_outgoings__outgoing_id__cancel_put",
+				"parameters": [
+					{
+						"name": "outgoing_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Outgoing Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OutgoingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/outgoings/{outgoing_id}/confirm-gi": {
+			"put": {
+				"tags": ["outgoings"],
+				"summary": "Confirm Gi",
+				"description": "Confirm outgoing as Goods Issue (GI).",
+				"operationId": "confirm_gi_outgoings__outgoing_id__confirm_gi_put",
+				"parameters": [
+					{
+						"name": "outgoing_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Outgoing Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OutgoingResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/requests": {
+			"get": {
+				"tags": ["requests"],
+				"summary": "List Requests",
+				"description": "List all requests with optional filtering.\n\nstatus_filter options: draft, completed, cancelled",
+				"operationId": "list_requests_requests_get",
+				"parameters": [
+					{
+						"name": "skip",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 0,
+							"title": "Skip"
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "integer",
+							"default": 100,
+							"title": "Limit"
+						}
+					},
+					{
+						"name": "status_filter",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"title": "Status Filter"
+						}
+					},
+					{
+						"name": "request_number",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"title": "Request Number"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/RequestResponse"
+									},
+									"title": "Response List Requests Requests Get"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": ["requests"],
+				"summary": "Create Request",
+				"description": "Create a new request in draft status.",
+				"operationId": "create_request_requests_post",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RequestCreate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RequestResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/requests/{request_id}": {
+			"get": {
+				"tags": ["requests"],
+				"summary": "Get Request",
+				"description": "Get request with nested items.",
+				"operationId": "get_request_requests__request_id__get",
+				"parameters": [
+					{
+						"name": "request_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Request Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RequestResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"put": {
+				"tags": ["requests"],
+				"summary": "Update Request",
+				"description": "Update a request.",
+				"operationId": "update_request_requests__request_id__put",
+				"parameters": [
+					{
+						"name": "request_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Request Id"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RequestUpdate"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RequestResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": ["requests"],
+				"summary": "Delete Request",
+				"description": "Soft-delete a request.",
+				"operationId": "delete_request_requests__request_id__delete",
+				"parameters": [
+					{
+						"name": "request_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Request Id"
+						}
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Successful Response"
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/requests/{request_id}/complete": {
+			"put": {
+				"tags": ["requests"],
+				"summary": "Complete Request",
+				"description": "Complete a request (transitions status → completed).",
+				"operationId": "complete_request_requests__request_id__complete_put",
+				"parameters": [
+					{
+						"name": "request_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Request Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RequestResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/requests/{request_id}/cancel": {
+			"put": {
+				"tags": ["requests"],
+				"summary": "Cancel Request",
+				"description": "Cancel a request (transitions status → cancelled).",
+				"operationId": "cancel_request_requests__request_id__cancel_put",
+				"parameters": [
+					{
+						"name": "request_id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"title": "Request Id"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RequestResponse"
+								}
+							}
+						}
+					},
+					"422": {
+						"description": "Validation Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/HTTPValidationError"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/": {
+			"get": {
+				"summary": "Root",
+				"description": "Root endpoint - API information.",
+				"operationId": "root__get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"additionalProperties": true,
+									"type": "object",
+									"title": "Response Root  Get"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/health": {
+			"get": {
+				"summary": "Health Check",
+				"description": "Health check endpoint.",
+				"operationId": "health_check_health_get",
+				"responses": {
+					"200": {
+						"description": "Successful Response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"additionalProperties": true,
+									"type": "object",
+									"title": "Response Health Check Health Get"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"HTTPValidationError": {
+				"properties": {
+					"detail": {
+						"items": {
+							"$ref": "#/components/schemas/ValidationError"
+						},
+						"type": "array",
+						"title": "Detail"
+					}
+				},
+				"type": "object",
+				"title": "HTTPValidationError"
+			},
+			"LoginRequest": {
+				"properties": {
+					"email": {
+						"type": "string",
+						"format": "email",
+						"title": "Email"
+					},
+					"password": {
+						"type": "string",
+						"title": "Password"
+					}
+				},
+				"type": "object",
+				"required": ["email", "password"],
+				"title": "LoginRequest",
+				"description": "Schema for login request."
+			},
+			"OutgoingCreate": {
+				"properties": {
+					"doc_number": {
+						"type": "string",
+						"title": "Doc Number"
+					},
+					"issued_by": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Issued By"
+					},
+					"issued_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Issued At"
+					},
+					"notes": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Notes"
+					},
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/OutgoingItemCreate"
+						},
+						"type": "array",
+						"title": "Items"
+					}
+				},
+				"type": "object",
+				"required": ["doc_number", "issued_by", "issued_at", "items"],
+				"title": "OutgoingCreate",
+				"description": "Schema for creating an outgoing."
+			},
+			"OutgoingItemCreate": {
+				"properties": {
+					"part_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Part Id"
+					},
+					"qty": {
+						"type": "integer",
+						"exclusiveMinimum": 0.0,
+						"title": "Qty"
+					}
+				},
+				"type": "object",
+				"required": ["part_id", "qty"],
+				"title": "OutgoingItemCreate",
+				"description": "Schema for creating an outgoing item."
+			},
+			"OutgoingItemResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Id"
+					},
+					"outgoing_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Outgoing Id"
+					},
+					"part_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Part Id"
+					},
+					"qty": {
+						"type": "integer",
+						"title": "Qty"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Created At"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Updated At"
+					}
+				},
+				"type": "object",
+				"required": ["id", "outgoing_id", "part_id", "qty", "created_at", "updated_at"],
+				"title": "OutgoingItemResponse",
+				"description": "Schema for outgoing item response."
+			},
+			"OutgoingResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Id"
+					},
+					"doc_number": {
+						"type": "string",
+						"title": "Doc Number"
+					},
+					"issued_by": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Issued By"
+					},
+					"issued_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Issued At"
+					},
+					"status": {
+						"type": "string",
+						"title": "Status"
+					},
+					"notes": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Notes"
+					},
+					"is_gi": {
+						"type": "boolean",
+						"title": "Is Gi"
+					},
+					"total_items": {
+						"type": "integer",
+						"title": "Total Items"
+					},
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/OutgoingItemResponse"
+						},
+						"type": "array",
+						"title": "Items"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Created At"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Updated At"
+					}
+				},
+				"type": "object",
+				"required": [
+					"id",
+					"doc_number",
+					"issued_by",
+					"issued_at",
+					"status",
+					"is_gi",
+					"total_items",
+					"items",
+					"created_at",
+					"updated_at"
+				],
+				"title": "OutgoingResponse",
+				"description": "Schema for outgoing response."
+			},
+			"OutgoingUpdate": {
+				"properties": {
+					"doc_number": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Doc Number"
+					},
+					"notes": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Notes"
+					},
+					"items": {
+						"anyOf": [
+							{
+								"items": {
+									"$ref": "#/components/schemas/OutgoingItemCreate"
+								},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Items"
+					}
+				},
+				"type": "object",
+				"title": "OutgoingUpdate",
+				"description": "Schema for updating an outgoing."
+			},
+			"PartCreate": {
+				"properties": {
+					"part_number": {
+						"type": "string",
+						"title": "Part Number"
+					},
+					"part_name": {
+						"type": "string",
+						"title": "Part Name"
+					},
+					"customer_code": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Customer Code"
+					},
+					"supplier_code": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Supplier Code"
+					},
+					"model": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Model"
+					},
+					"variant": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Variant"
+					},
+					"standard_packing": {
+						"type": "integer",
+						"title": "Standard Packing",
+						"default": 1
+					},
+					"stock": {
+						"type": "integer",
+						"title": "Stock",
+						"default": 0
+					},
+					"address": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Address"
+					},
+					"is_active": {
+						"type": "boolean",
+						"title": "Is Active",
+						"default": true
+					}
+				},
+				"type": "object",
+				"required": ["part_number", "part_name"],
+				"title": "PartCreate",
+				"description": "Schema for creating a part."
+			},
+			"PartMovementResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Id"
+					},
+					"part_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Part Id"
+					},
+					"stock_before": {
+						"type": "integer",
+						"title": "Stock Before"
+					},
+					"type": {
+						"type": "string",
+						"title": "Type"
+					},
+					"qty": {
+						"type": "integer",
+						"title": "Qty"
+					},
+					"stock_after": {
+						"type": "integer",
+						"title": "Stock After"
+					},
+					"reference_type": {
+						"type": "string",
+						"title": "Reference Type"
+					},
+					"reference_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Reference Id"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Created At"
+					}
+				},
+				"type": "object",
+				"required": [
+					"id",
+					"part_id",
+					"stock_before",
+					"type",
+					"qty",
+					"stock_after",
+					"reference_type",
+					"reference_id",
+					"created_at"
+				],
+				"title": "PartMovementResponse",
+				"description": "Schema for part movement response."
+			},
+			"PartResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Id"
+					},
+					"part_number": {
+						"type": "string",
+						"title": "Part Number"
+					},
+					"part_name": {
+						"type": "string",
+						"title": "Part Name"
+					},
+					"customer_code": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Customer Code"
+					},
+					"supplier_code": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Supplier Code"
+					},
+					"model": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Model"
+					},
+					"variant": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Variant"
+					},
+					"standard_packing": {
+						"type": "integer",
+						"title": "Standard Packing"
+					},
+					"stock": {
+						"type": "integer",
+						"title": "Stock"
+					},
+					"address": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Address"
+					},
+					"is_active": {
+						"type": "boolean",
+						"title": "Is Active"
+					},
+					"stock_status": {
+						"type": "string",
+						"title": "Stock Status"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Created At"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Updated At"
+					}
+				},
+				"type": "object",
+				"required": [
+					"id",
+					"part_number",
+					"part_name",
+					"standard_packing",
+					"stock",
+					"is_active",
+					"stock_status",
+					"created_at",
+					"updated_at"
+				],
+				"title": "PartResponse",
+				"description": "Schema for part response."
+			},
+			"PartUpdate": {
+				"properties": {
+					"part_number": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Part Number"
+					},
+					"part_name": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Part Name"
+					},
+					"customer_code": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Customer Code"
+					},
+					"supplier_code": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Supplier Code"
+					},
+					"model": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Model"
+					},
+					"variant": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Variant"
+					},
+					"standard_packing": {
+						"anyOf": [
+							{
+								"type": "integer"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Standard Packing"
+					},
+					"address": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Address"
+					},
+					"is_active": {
+						"anyOf": [
+							{
+								"type": "boolean"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Is Active"
+					}
+				},
+				"type": "object",
+				"title": "PartUpdate",
+				"description": "Schema for updating a part."
+			},
+			"ReceivingCreate": {
+				"properties": {
+					"doc_number": {
+						"type": "string",
+						"title": "Doc Number"
+					},
+					"received_by": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Received By"
+					},
+					"received_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Received At"
+					},
+					"notes": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Notes"
+					},
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/ReceivingItemCreate"
+						},
+						"type": "array",
+						"title": "Items"
+					}
+				},
+				"type": "object",
+				"required": ["doc_number", "received_by", "received_at", "items"],
+				"title": "ReceivingCreate",
+				"description": "Schema for creating a receiving."
+			},
+			"ReceivingItemCreate": {
+				"properties": {
+					"part_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Part Id"
+					},
+					"qty": {
+						"type": "integer",
+						"exclusiveMinimum": 0.0,
+						"title": "Qty"
+					}
+				},
+				"type": "object",
+				"required": ["part_id", "qty"],
+				"title": "ReceivingItemCreate",
+				"description": "Schema for creating a receiving item."
+			},
+			"ReceivingItemResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Id"
+					},
+					"receiving_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Receiving Id"
+					},
+					"part_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Part Id"
+					},
+					"qty": {
+						"type": "integer",
+						"title": "Qty"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Created At"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Updated At"
+					}
+				},
+				"type": "object",
+				"required": ["id", "receiving_id", "part_id", "qty", "created_at", "updated_at"],
+				"title": "ReceivingItemResponse",
+				"description": "Schema for receiving item response."
+			},
+			"ReceivingResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Id"
+					},
+					"doc_number": {
+						"type": "string",
+						"title": "Doc Number"
+					},
+					"received_by": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Received By"
+					},
+					"received_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Received At"
+					},
+					"status": {
+						"type": "string",
+						"title": "Status"
+					},
+					"notes": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Notes"
+					},
+					"is_gr": {
+						"type": "boolean",
+						"title": "Is Gr"
+					},
+					"total_items": {
+						"type": "integer",
+						"title": "Total Items"
+					},
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/ReceivingItemResponse"
+						},
+						"type": "array",
+						"title": "Items"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Created At"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Updated At"
+					}
+				},
+				"type": "object",
+				"required": [
+					"id",
+					"doc_number",
+					"received_by",
+					"received_at",
+					"status",
+					"is_gr",
+					"total_items",
+					"items",
+					"created_at",
+					"updated_at"
+				],
+				"title": "ReceivingResponse",
+				"description": "Schema for receiving response."
+			},
+			"ReceivingUpdate": {
+				"properties": {
+					"doc_number": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Doc Number"
+					},
+					"notes": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Notes"
+					},
+					"items": {
+						"anyOf": [
+							{
+								"items": {
+									"$ref": "#/components/schemas/ReceivingItemCreate"
+								},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Items"
+					}
+				},
+				"type": "object",
+				"title": "ReceivingUpdate",
+				"description": "Schema for updating a receiving."
+			},
+			"RequestCreate": {
+				"properties": {
+					"request_number": {
+						"type": "string",
+						"title": "Request Number"
+					},
+					"requested_by": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Requested By"
+					},
+					"requested_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Requested At"
+					},
+					"destination": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Destination"
+					},
+					"notes": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Notes"
+					},
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/RequestListCreate"
+						},
+						"type": "array",
+						"title": "Items"
+					}
+				},
+				"type": "object",
+				"required": ["request_number", "requested_by", "requested_at", "items"],
+				"title": "RequestCreate",
+				"description": "Schema for creating a request."
+			},
+			"RequestListCreate": {
+				"properties": {
+					"part_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Part Id"
+					},
+					"qty": {
+						"type": "integer",
+						"exclusiveMinimum": 0.0,
+						"title": "Qty"
+					},
+					"is_urgent": {
+						"type": "boolean",
+						"title": "Is Urgent",
+						"default": false
+					}
+				},
+				"type": "object",
+				"required": ["part_id", "qty"],
+				"title": "RequestListCreate",
+				"description": "Schema for creating a request list item."
+			},
+			"RequestListResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Id"
+					},
+					"request_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Request Id"
+					},
+					"part_id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Part Id"
+					},
+					"qty": {
+						"type": "integer",
+						"title": "Qty"
+					},
+					"is_urgent": {
+						"type": "boolean",
+						"title": "Is Urgent"
+					},
+					"is_supplied": {
+						"type": "boolean",
+						"title": "Is Supplied"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Created At"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Updated At"
+					}
+				},
+				"type": "object",
+				"required": [
+					"id",
+					"request_id",
+					"part_id",
+					"qty",
+					"is_urgent",
+					"is_supplied",
+					"created_at",
+					"updated_at"
+				],
+				"title": "RequestListResponse",
+				"description": "Schema for request list item response."
+			},
+			"RequestResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Id"
+					},
+					"request_number": {
+						"type": "string",
+						"title": "Request Number"
+					},
+					"requested_by": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Requested By"
+					},
+					"requested_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Requested At"
+					},
+					"destination": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Destination"
+					},
+					"status": {
+						"type": "string",
+						"title": "Status"
+					},
+					"notes": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Notes"
+					},
+					"items": {
+						"items": {
+							"$ref": "#/components/schemas/RequestListResponse"
+						},
+						"type": "array",
+						"title": "Items"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Created At"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Updated At"
+					}
+				},
+				"type": "object",
+				"required": [
+					"id",
+					"request_number",
+					"requested_by",
+					"requested_at",
+					"status",
+					"items",
+					"created_at",
+					"updated_at"
+				],
+				"title": "RequestResponse",
+				"description": "Schema for request response."
+			},
+			"RequestUpdate": {
+				"properties": {
+					"request_number": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Request Number"
+					},
+					"destination": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Destination"
+					},
+					"notes": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Notes"
+					},
+					"items": {
+						"anyOf": [
+							{
+								"items": {
+									"$ref": "#/components/schemas/RequestListCreate"
+								},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Items"
+					}
+				},
+				"type": "object",
+				"title": "RequestUpdate",
+				"description": "Schema for updating a request."
+			},
+			"TokenResponse": {
+				"properties": {
+					"access_token": {
+						"type": "string",
+						"title": "Access Token"
+					},
+					"token_type": {
+						"type": "string",
+						"title": "Token Type",
+						"default": "bearer"
+					},
+					"user": {
+						"$ref": "#/components/schemas/UserResponse"
+					}
+				},
+				"type": "object",
+				"required": ["access_token", "user"],
+				"title": "TokenResponse",
+				"description": "Schema for token response."
+			},
+			"UserCreate": {
+				"properties": {
+					"name": {
+						"type": "string",
+						"title": "Name"
+					},
+					"email": {
+						"type": "string",
+						"format": "email",
+						"title": "Email"
+					},
+					"password": {
+						"type": "string",
+						"title": "Password"
+					},
+					"permissions": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"title": "Permissions"
+					}
+				},
+				"type": "object",
+				"required": ["name", "email", "password"],
+				"title": "UserCreate",
+				"description": "Schema for creating a user."
+			},
+			"UserResponse": {
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"title": "Id"
+					},
+					"name": {
+						"type": "string",
+						"title": "Name"
+					},
+					"email": {
+						"type": "string",
+						"title": "Email"
+					},
+					"permissions": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array",
+						"title": "Permissions"
+					},
+					"email_verified_at": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "date-time"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Email Verified At"
+					},
+					"created_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Created At"
+					},
+					"updated_at": {
+						"type": "string",
+						"format": "date-time",
+						"title": "Updated At"
+					}
+				},
+				"type": "object",
+				"required": ["id", "name", "email", "permissions", "created_at", "updated_at"],
+				"title": "UserResponse",
+				"description": "Schema for user response (excludes sensitive fields)."
+			},
+			"UserUpdate": {
+				"properties": {
+					"name": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Name"
+					},
+					"email": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "email"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Email"
+					},
+					"permissions": {
+						"anyOf": [
+							{
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"title": "Permissions"
+					}
+				},
+				"type": "object",
+				"title": "UserUpdate",
+				"description": "Schema for updating a user."
+			},
+			"ValidationError": {
+				"properties": {
+					"loc": {
+						"items": {
+							"anyOf": [
+								{
+									"type": "string"
+								},
+								{
+									"type": "integer"
+								}
+							]
+						},
+						"type": "array",
+						"title": "Location"
+					},
+					"msg": {
+						"type": "string",
+						"title": "Message"
+					},
+					"type": {
+						"type": "string",
+						"title": "Error Type"
+					}
+				},
+				"type": "object",
+				"required": ["loc", "msg", "type"],
+				"title": "ValidationError"
+			}
+		}
+	}
+}
