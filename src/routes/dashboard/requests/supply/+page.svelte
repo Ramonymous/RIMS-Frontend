@@ -5,7 +5,7 @@
 	import { fade, slide, scale } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 	import { getParts } from '$lib/api/parts.js';
-	import { getRequests, supplyRequestItem } from '$lib/api/requests.js';
+	import { getRequests, supplyRequestItem, pickRequestItem } from '$lib/api/requests.js';
 	import type { PartResponse } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { auth } from '$lib/stores/auth.svelte.js';
@@ -82,6 +82,7 @@
 
 	// Permissions
 	const canSupply = $derived(auth.hasPermission('requests.supply'));
+	const canChecklocation = $derived(auth.hasPermission('requests.locations'));
 
 	// Supply dialog state
 	let supplyDialogOpen = $state(false);
@@ -317,6 +318,31 @@
 		}
 	}
 
+	async function runCheckLocation(item: PendingItem) {
+		// Safety check for permissions
+		if (!canChecklocation) {
+			toast.error('Akses Ditolak', {
+				description: 'Anda tidak memiliki izin (checks.locations) untuk fitur ini.'
+			});
+			return;
+		}
+
+		try {
+			// Visual feedback that the action was triggered
+			toast.info('Mengecek lokasi...', {
+				description: `Mencari part ${item.part.part_number}. Perhatikan lampu di rak.`
+			});
+
+			// Call the API
+			await pickRequestItem(item.id);
+		} catch (e) {
+			const error = e as ApiError;
+			toast.error('Gagal mengecek lokasi', {
+				description: error.detail || 'Terjadi kesalahan pada sistem IoT.'
+			});
+		}
+	}
+
 	function openSupplyDialog(item: PendingItem) {
 		selectedItem = item;
 		verificationStep = 'verify';
@@ -459,31 +485,32 @@
 				</p>
 			</div>
 
-			<Skeleton class="h-5 w-20" />
-			<Button
-				variant="outline"
-				size="icon"
-				onclick={toggleVoice}
-				title={voiceState.isEnabled ? 'Mute' : 'Unmute'}
-				class="relative h-10 w-10 rounded-full border-2"
-			>
-				{#if voiceState.isEnabled}
-					<VolumeIcon class="size-5 text-primary" />
-				{:else}
-					<VolumeOffIcon class="size-5 text-muted-foreground" />
-				{/if}
-				{#if voiceState.isEnabled && voiceState.queueLength > 0}
-					<span
-						class="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white ring-2 ring-background"
-					>
-						{voiceState.queueLength}
-					</span>
-				{/if}
-			</Button>
-			<Button variant="outline" size="lg" onclick={loadData} disabled={loading} class="gap-2">
-				<RefreshIcon class="size-4 {loading ? 'animate-spin' : ''}" />
-				Refresh
-			</Button>
+			<div class="flex items-center gap-2">
+				<Button
+					variant="outline"
+					size="icon"
+					onclick={toggleVoice}
+					title={voiceState.isEnabled ? 'Mute' : 'Unmute'}
+					class="relative h-10 w-10 rounded-full border-2"
+				>
+					{#if voiceState.isEnabled}
+						<VolumeIcon class="size-5 text-primary" />
+					{:else}
+						<VolumeOffIcon class="size-5 text-muted-foreground" />
+					{/if}
+					{#if voiceState.isEnabled && voiceState.queueLength > 0}
+						<span
+							class="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white ring-2 ring-background"
+						>
+							{voiceState.queueLength}
+						</span>
+					{/if}
+				</Button>
+				<Button variant="outline" size="lg" onclick={loadData} disabled={loading} class="gap-2">
+					<RefreshIcon class="size-4 {loading ? 'animate-spin' : ''}" />
+					Refresh
+				</Button>
+			</div>
 		</div>
 
 		<!-- Status Summary / KPI Cards -->
@@ -653,8 +680,16 @@
 									<CheckIcon class="mr-2 size-4" />
 									Supply Items
 								</Button>
-							{:else}
-								<Button variant="secondary" disabled class="w-full opacity-50">Read Only</Button>
+							{/if}
+							{#if canChecklocation}
+								<Button
+									variant="outline"
+									class="mt-2 w-full shadow-sm"
+									onclick={() => runCheckLocation(item)}
+								>
+									<CheckIcon class="mr-2 size-4" />
+									Check Location
+								</Button>
 							{/if}
 						</div>
 					</div>

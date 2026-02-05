@@ -1,7 +1,3 @@
-/**
- * Requests API service
- */
-
 import api from './client.js';
 import { apiCache, cacheKeys } from './cache.js';
 import type {
@@ -9,18 +5,31 @@ import type {
 	RequestCreate,
 	RequestUpdate,
 	PaginatedResponse,
-	PaginationParams
+	PaginationParams,
+	RequestListResponse,
 } from './types.js';
 
+/**
+ * Types & Interfaces
+ */
 export interface RequestsListParams extends PaginationParams {
 	status_filter?: 'draft' | 'completed' | 'cancelled';
 	request_number?: string;
 }
 
+/**
+ * Cache Helpers
+ */
 function invalidateRequestsCache(): void {
 	apiCache.invalidate('requests*');
 	apiCache.invalidate(cacheKeys.dashboard());
 }
+
+/**
+ * Requests API Service
+ */
+
+// --- Read Operations ---
 
 export async function getRequests(
 	params?: RequestsListParams
@@ -34,6 +43,8 @@ export async function getRequests(
 export async function getRequest(id: string): Promise<RequestResponse> {
 	return api.get<RequestResponse>(`/requests/${id}`);
 }
+
+// --- Write Operations ---
 
 export async function createRequest(data: RequestCreate): Promise<RequestResponse> {
 	const result = await api.post<RequestResponse>('/requests', data);
@@ -52,6 +63,8 @@ export async function deleteRequest(id: string): Promise<void> {
 	invalidateRequestsCache();
 }
 
+// --- Action Operations ---
+
 export async function completeRequest(id: string): Promise<RequestResponse> {
 	const result = await api.put<RequestResponse>(`/requests/${id}/complete`);
 	invalidateRequestsCache();
@@ -62,6 +75,10 @@ export async function cancelRequest(id: string): Promise<RequestResponse> {
 	const result = await api.put<RequestResponse>(`/requests/${id}/cancel`);
 	invalidateRequestsCache();
 	return result;
+}
+
+export async function pickRequestItem(itemId: string): Promise<RequestListResponse> {
+	return api.post<RequestListResponse>(`/requests/pick/${itemId}`);
 }
 
 export async function supplyRequestItem(itemId: string, qty?: number): Promise<RequestResponse> {

@@ -61,7 +61,8 @@
 		{ value: 'requests.delete', label: 'Delete Requests' },
 		{ value: 'requests.complete', label: 'Complete Requests' },
 		{ value: 'requests.cancel', label: 'Cancel Requests' },
-		{ value: 'requests.supply', label: 'Supply Requests' }
+		{ value: 'requests.supply', label: 'Supply Requests' },
+		{ value: 'requests.locations', label: 'Check Locations' }
 	];
 
 	const isEditing = $derived(!!user);
