@@ -77,10 +77,6 @@ export async function cancelRequest(id: string): Promise<RequestResponse> {
 	return result;
 }
 
-export async function pickRequestItem(itemId: string): Promise<RequestListResponse> {
-	return api.post<RequestListResponse>(`/requests/pick/${itemId}`);
-}
-
 export async function supplyRequestItem(itemId: string, qty?: number): Promise<RequestResponse> {
 	const queryParams = qty ? `?qty=${qty}` : '';
 	const result = await api.put<RequestResponse>(`/requests/items/${itemId}/supply${queryParams}`);

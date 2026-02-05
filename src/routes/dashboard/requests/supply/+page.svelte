@@ -4,8 +4,8 @@
 	import { flip } from 'svelte/animate';
 	import { fade, slide, scale } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
-	import { getParts } from '$lib/api/parts.js';
-	import { getRequests, supplyRequestItem, pickRequestItem } from '$lib/api/requests.js';
+	import { getParts, pickRequestItem } from '$lib/api/parts.js';
+	import { getRequests, supplyRequestItem } from '$lib/api/requests.js';
 	import type { PartResponse } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { auth } from '$lib/stores/auth.svelte.js';
@@ -322,7 +322,7 @@
 		// Safety check for permissions
 		if (!canChecklocation) {
 			toast.error('Akses Ditolak', {
-				description: 'Anda tidak memiliki izin (checks.locations) untuk fitur ini.'
+				description: 'Anda tidak memiliki izin (requests.locations) untuk fitur ini.'
 			});
 			return;
 		}
@@ -334,7 +334,7 @@
 			});
 
 			// Call the API
-			await pickRequestItem(item.id);
+			await pickRequestItem(item.part.part_number);
 		} catch (e) {
 			const error = e as ApiError;
 			toast.error('Gagal mengecek lokasi', {

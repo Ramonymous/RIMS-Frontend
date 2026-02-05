@@ -30,6 +30,20 @@ export async function getPart(id: string): Promise<PartResponse> {
 	return api.get<PartResponse>(`/parts/${id}`);
 }
 
+export async function pickRequestItem(partNumber: string): Promise<PartResponse> {
+	const cacheKey = `parts:pick:${partNumber}`;
+	const cached = apiCache.get<PartResponse>(cacheKey);
+	if (cached) return cached;
+
+	// Kirim object, bukan string di URL
+	const result = await api.post<PartResponse>(`/parts/pick`, {
+		part_number: partNumber
+	});
+
+	apiCache.set(cacheKey, result);
+	return result;
+}
+
 export async function createPart(data: PartCreate): Promise<PartResponse> {
 	const result = await api.post<PartResponse>('/parts', data);
 	apiCache.invalidate('parts:*'); // Invalidate all parts cache entries
