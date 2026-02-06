@@ -10,13 +10,6 @@ import {
 } from '$lib/api/auth.js';
 import type { UserResponse, LoginRequest } from '$lib/api/types.js';
 
-interface AuthState {
-	user: UserResponse | null;
-	token: string | null;
-	isAuthenticated: boolean;
-	isLoading: boolean;
-}
-
 function createAuthStore() {
 	let user = $state<UserResponse | null>(null);
 	let token = $state<string | null>(null);

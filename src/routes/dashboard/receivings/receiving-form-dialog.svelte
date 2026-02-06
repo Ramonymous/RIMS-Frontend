@@ -96,11 +96,6 @@
 		items = items.map((item, i) => (i === index ? { ...item, qty: Math.max(1, qty) } : item));
 	}
 
-	function getPartNumber(partId: string): string {
-		const part = parts.find((p) => p.id === partId);
-		return part ? part.part_number : 'Select a part';
-	}
-
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
 

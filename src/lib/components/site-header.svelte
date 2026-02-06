@@ -12,7 +12,9 @@
 		'/dashboard/requests': 'Requests',
 		'/dashboard/requests/supply': 'Supply Requests',
 		'/dashboard/users': 'Users',
-		'/dashboard/settings': 'Settings'
+		'/dashboard/settings': 'Settings',
+		'/dashboard/check-location': 'Check Location',
+		'/dashboard/movements': 'Movements'
 	};
 
 	const pageTitle = $derived(routeTitles[page.url.pathname] ?? 'Dashboard');

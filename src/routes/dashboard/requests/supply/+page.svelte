@@ -2,11 +2,10 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 	import { flip } from 'svelte/animate';
-	import { fade, slide, scale } from 'svelte/transition';
+	import { slide, scale } from 'svelte/transition'; // Removed unused 'fade'
 	import { quintOut } from 'svelte/easing';
 	import { getParts, pickRequestItem } from '$lib/api/parts.js';
 	import { getRequests, supplyRequestItem } from '$lib/api/requests.js';
-	import type { PartResponse } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { auth } from '$lib/stores/auth.svelte.js';
 	import { toast } from 'svelte-sonner';
@@ -34,8 +33,7 @@
 	import PackageIcon from '@tabler/icons-svelte/icons/package';
 	import CheckIcon from '@tabler/icons-svelte/icons/check';
 	import MapPinIcon from '@tabler/icons-svelte/icons/map-pin';
-	import WifiIcon from '@tabler/icons-svelte/icons/wifi';
-	import WifiOffIcon from '@tabler/icons-svelte/icons/wifi-off';
+	import WifiOffIcon from '@tabler/icons-svelte/icons/wifi-off'; // Removed unused 'WifiIcon'
 	import UserIcon from '@tabler/icons-svelte/icons/user';
 	import ClockIcon from '@tabler/icons-svelte/icons/clock';
 	import HashIcon from '@tabler/icons-svelte/icons/hash';
@@ -69,7 +67,6 @@
 	}
 
 	// State
-	let parts = $state<PartResponse[]>([]);
 	let pendingItems = $state<PendingItem[]>([]);
 	let loading = $state(true);
 	let currentTime = $state(Date.now());
@@ -192,7 +189,6 @@
 
 			const partsData = partsRes.items;
 			const requestsData = requestsRes.items;
-			parts = partsData;
 
 			const items: PendingItem[] = [];
 			for (const request of requestsData) {
@@ -435,6 +431,8 @@
 		await voiceService.initialize();
 		sseClient.connect();
 		sseClient.onRequestItemCreated(handleNewItem);
+		// Add the handler for item supplied events
+		sseClient.onRequestItemSupplied(handleItemSupplied);
 
 		setTimeout(() => {
 			if (pendingItems.length > 0) {
@@ -567,7 +565,7 @@
 	<!-- Items List Grid -->
 	{#if loading}
 		<div class="grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-			{#each Array(8) as _}
+			{#each Array(8) as _, i (i)}
 				<Card.Root class="h-[220px]">
 					<Card.Content class="flex h-full flex-col justify-between p-6">
 						<div class="space-y-3">

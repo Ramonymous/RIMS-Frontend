@@ -66,7 +66,7 @@
 			<Tabs.Content value="receivings" class="mt-4">
 				{#if loading}
 					<div class="space-y-3">
-						{#each Array(3) as _}
+						{#each Array(3) as _, i (i)}
 							<div class="flex items-center justify-between">
 								<Skeleton class="h-5 w-32" />
 								<Skeleton class="h-5 w-20" />
@@ -77,7 +77,7 @@
 					<p class="py-4 text-center text-sm text-muted-foreground">No recent receivings</p>
 				{:else}
 					<div class="space-y-3">
-						{#each receivings as receiving}
+						{#each receivings as receiving (receiving.id)}
 							<div class="flex items-center justify-between border-b py-2 last:border-0">
 								<div class="flex flex-col gap-1">
 									<span class="text-sm font-medium">{receiving.doc_number}</span>
@@ -104,7 +104,7 @@
 			<Tabs.Content value="outgoings" class="mt-4">
 				{#if loading}
 					<div class="space-y-3">
-						{#each Array(3) as _}
+						{#each Array(3) as _, i (i)}
 							<div class="flex items-center justify-between">
 								<Skeleton class="h-5 w-32" />
 								<Skeleton class="h-5 w-20" />
@@ -115,7 +115,7 @@
 					<p class="py-4 text-center text-sm text-muted-foreground">No recent outgoings</p>
 				{:else}
 					<div class="space-y-3">
-						{#each outgoings as outgoing}
+						{#each outgoings as outgoing (outgoing.id)}
 							<div class="flex items-center justify-between border-b py-2 last:border-0">
 								<div class="flex flex-col gap-1">
 									<span class="text-sm font-medium">{outgoing.doc_number}</span>

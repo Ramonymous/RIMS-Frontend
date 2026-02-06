@@ -9,7 +9,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { Field, FieldLabel, FieldGroup } from '$lib/components/ui/field/index.js';
+	import { Field, FieldLabel } from '$lib/components/ui/field/index.js';
 
 	// Icons
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';

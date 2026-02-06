@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import {
 		FieldGroup,
 		Field,
@@ -34,7 +35,7 @@
 			toast.success('Login successful', {
 				description: `Welcome back, ${auth.user?.name}!`
 			});
-			goto('/dashboard');
+			goto(resolve('/dashboard'));
 		} catch (error) {
 			const apiError = error as ApiError;
 			toast.error('Login failed', {

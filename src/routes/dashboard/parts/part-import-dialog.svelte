@@ -144,7 +144,8 @@
 				toast.success('File parsed', {
 					description: `Found ${parsedData.length} rows to import.`
 				});
-			} catch (err) {
+			} catch (_err) {
+				// Changed from 'err' to '_err'
 				toast.error('Failed to parse file', {
 					description: 'Please ensure the file is a valid Excel file.'
 				});

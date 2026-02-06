@@ -16,6 +16,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { ComponentProps } from 'svelte';
 	import { auth } from '$lib/stores/auth.svelte.js';
+	import { resolve } from '$app/paths';
 
 	const navMain = [
 		{
@@ -38,6 +39,11 @@
 			title: 'Outgoings',
 			url: '/dashboard/outgoings',
 			icon: PackageExportIcon
+		},
+		{
+			title: 'Check Location',
+			url: '/dashboard/check-location',
+			icon: InnerShadowTopIcon
 		},
 		{
 			title: 'Movements',
@@ -91,7 +97,7 @@
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton class="data-[slot=sidebar-menu-button]:!p-1.5">
 					{#snippet child({ props })}
-						<a href="/dashboard" {...props}>
+						<a href={resolve('/dashboard')} {...props}>
 							<InnerShadowTopIcon class="!size-5" />
 							<span class="text-base font-semibold">ProjectRIMS</span>
 						</a>

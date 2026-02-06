@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { browser } from '$app/environment';
 	import { onDestroy } from 'svelte';
 	import { auth } from '$lib/stores/auth.svelte.js';
@@ -38,7 +39,7 @@
 
 			// Redirect to login if not authenticated
 			if (!auth.isAuthenticated) {
-				goto('/login');
+				goto(resolve('/login'));
 			} else {
 				// Connect to SSE for real-time notifications
 				sseClient.connect();

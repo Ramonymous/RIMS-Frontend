@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import DotsVerticalIcon from '@tabler/icons-svelte/icons/dots-vertical';
 	import LogoutIcon from '@tabler/icons-svelte/icons/logout';
 	import UserCircleIcon from '@tabler/icons-svelte/icons/user-circle';
@@ -16,7 +17,7 @@
 	function handleLogout() {
 		auth.logout();
 		toast.success('Logged out successfully');
-		goto('/login');
+		goto(resolve('/login'));
 	}
 
 	// Generate initials from name

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getUsers, deleteUser, type UsersListParams } from '$lib/api/users.js';
+	import { getUsers, deleteUser } from '$lib/api/users.js'; // Removed unused type import
 	import type { UserResponse } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { toast } from 'svelte-sonner';

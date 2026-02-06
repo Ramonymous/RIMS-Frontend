@@ -71,21 +71,24 @@
 	// Count urgent items
 	const urgentCount = $derived(items.filter((i) => i.is_urgent).length);
 
-	// Check for duplicate parts
+	// Check for duplicate parts - using arrays instead of Sets
 	const duplicatePartIds = $derived(() => {
 		const partIds = items.map((i) => i.part_id).filter(Boolean);
-		const seen = new Set<string>();
-		const duplicates = new Set<string>();
+		const seen: string[] = [];
+		const duplicates: string[] = [];
 		for (const id of partIds) {
-			if (seen.has(id)) {
-				duplicates.add(id);
+			if (seen.includes(id)) {
+				if (!duplicates.includes(id)) {
+					duplicates.push(id);
+				}
+			} else {
+				seen.push(id);
 			}
-			seen.add(id);
 		}
 		return duplicates;
 	});
 
-	const hasDuplicates = $derived(duplicatePartIds().size > 0);
+	const hasDuplicates = $derived(duplicatePartIds.length > 0);
 
 	// Reset form when dialog opens/request changes
 	$effect(() => {
@@ -136,7 +139,7 @@
 	}
 
 	function isDuplicate(partId: string): boolean {
-		return duplicatePartIds().has(partId);
+		return duplicatePartIds().includes(partId);
 	}
 
 	function handleQrScan(scannedValue: string) {
@@ -291,7 +294,7 @@
 								{destination || 'Select destination'}
 							</Select.Trigger>
 							<Select.Content>
-								{#each destinations as dest}
+								{#each destinations as dest (dest)}
 									<Select.Item value={dest}>{dest}</Select.Item>
 								{/each}
 							</Select.Content>

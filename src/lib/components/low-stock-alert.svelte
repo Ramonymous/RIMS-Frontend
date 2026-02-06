@@ -43,7 +43,7 @@
 	<Card.Content>
 		{#if loading}
 			<div class="space-y-3">
-				{#each Array(5) as _}
+				{#each Array(5) as _, i (i)}
 					<div class="flex items-center justify-between">
 						<Skeleton class="h-5 w-40" />
 						<Skeleton class="h-5 w-16" />
@@ -58,7 +58,7 @@
 			</div>
 		{:else}
 			<div class="space-y-3">
-				{#each parts as part}
+				{#each parts as part (part.id)}
 					<div class="flex items-center justify-between border-b py-2 last:border-0">
 						<div class="flex min-w-0 flex-1 flex-col gap-1">
 							<span class="truncate text-sm font-medium">{part.part_name}</span>

@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { getParts, deletePart, createPart } from '$lib/api/parts.js';
-	import type { PartResponse, PartCreate } from '$lib/api/types.js';
+	import { getParts, deletePart } from '$lib/api/parts.js';
+	import type { PartResponse } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { auth } from '$lib/stores/auth.svelte.js';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
-	import * as XLSX from 'xlsx';
-
 	// Components
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -232,7 +230,7 @@
 			</Table.Header>
 			<Table.Body>
 				{#if loading}
-					{#each Array(5) as _}
+					{#each Array(5) as _, i (i)}
 						<Table.Row>
 							<Table.Cell><Skeleton class="h-4 w-24" /></Table.Cell>
 							<Table.Cell><Skeleton class="h-4 w-32" /></Table.Cell>

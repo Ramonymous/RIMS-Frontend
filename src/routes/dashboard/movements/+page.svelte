@@ -348,7 +348,7 @@
 					</Table.Header>
 					<Table.Body>
 						{#if loading}
-							{#each Array(10) as _}
+							{#each Array(10) as _, i (i)}
 								<Table.Row>
 									<Table.Cell><Skeleton class="h-4 w-24" /></Table.Cell>
 									<Table.Cell><Skeleton class="h-4 w-40" /></Table.Cell>
@@ -469,7 +469,7 @@
 					</Table.Header>
 					<Table.Body>
 						{#if loadingMovements}
-							{#each Array(10) as _}
+							{#each Array(10) as _, i (i)}
 								<Table.Row>
 									<Table.Cell><Skeleton class="h-6 w-6" /></Table.Cell>
 									<Table.Cell><Skeleton class="h-4 w-32" /></Table.Cell>

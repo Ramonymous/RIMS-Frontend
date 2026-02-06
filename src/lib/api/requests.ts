@@ -5,8 +5,7 @@ import type {
 	RequestCreate,
 	RequestUpdate,
 	PaginatedResponse,
-	PaginationParams,
-	RequestListResponse,
+	PaginationParams
 } from './types.js';
 
 /**

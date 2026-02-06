@@ -29,30 +29,44 @@
 		}
 	});
 
-	// Process movements into daily chart data for current month
 	const chartData = $derived.by(() => {
 		if (!movements.length) return [];
 
 		const now = new Date();
-		// Get first and last day of current month
-		const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-		const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+		const year = now.getFullYear();
+		const month = now.getMonth();
 
-		// Create a map of dates to aggregate incoming/outgoing
-		const dailyData = new Map<string, { date: Date; incoming: number; outgoing: number }>();
+		// First and last day of current month (immutable)
+		const firstDay = new Date(year, month, 1);
+		const lastDay = new Date(year, month + 1, 0);
 
-		// Initialize all days in current month
-		for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
-			const date = new Date(d);
-			date.setHours(0, 0, 0, 0);
-			const key = date.toISOString().split('T')[0];
-			dailyData.set(key, { date: new Date(date), incoming: 0, outgoing: 0 });
+		// Use plain object instead of Map
+		const dailyData: Record<string, { date: Date; incoming: number; outgoing: number }> = {};
+
+		// Generate all dates in current month without mutating Date objects
+		const dates: Date[] = [];
+		let currentTime = firstDay.getTime();
+		const lastTime = lastDay.getTime();
+
+		while (currentTime <= lastTime) {
+			dates.push(new Date(currentTime));
+			currentTime += 24 * 60 * 60 * 1000; // Add one day in milliseconds
 		}
 
-		// Aggregate movements by day
+		// Initialize dailyData with all dates
+		for (const date of dates) {
+			const key = date.toISOString().split('T')[0];
+			dailyData[key] = {
+				date: new Date(date),
+				incoming: 0,
+				outgoing: 0
+			};
+		}
+
+		// Aggregate movements
 		for (const movement of movements) {
 			const dateKey = new Date(movement.created_at).toISOString().split('T')[0];
-			const dayData = dailyData.get(dateKey);
+			const dayData = dailyData[dateKey];
 			if (dayData) {
 				if (movement.type === 'in') {
 					dayData.incoming += movement.qty;
@@ -62,30 +76,27 @@
 			}
 		}
 
-		// Convert to array sorted by date
-		return Array.from(dailyData.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
+		// Convert to sorted array
+		return Object.values(dailyData).sort((a, b) => a.date.getTime() - b.date.getTime());
 	});
 
-	// Filter data based on time range
 	const filteredData = $derived.by(() => {
 		if (!chartData.length) return [];
 
 		const now = new Date();
 		if (timeRange === '7d') {
-			// Last 7 days in current month only
-			const cutoffDate = new Date(now);
-			cutoffDate.setDate(cutoffDate.getDate() - 7);
+			// Calculate cutoff without mutating Date objects
+			const cutoffTimestamp = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+			const cutoffDate = new Date(cutoffTimestamp);
 			cutoffDate.setHours(0, 0, 0, 0);
-			// But not before the first day of the month
+
 			const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
 			return chartData.filter((item) => item.date >= cutoffDate && item.date >= firstDay);
 		} else {
-			// All days in current month
 			return chartData;
 		}
 	});
 
-	// Calculate totals
 	const totalIncoming = $derived(filteredData.reduce((sum, d) => sum + d.incoming, 0));
 	const totalOutgoing = $derived(filteredData.reduce((sum, d) => sum + d.outgoing, 0));
 

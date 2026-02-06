@@ -294,7 +294,7 @@
 			</Table.Header>
 			<Table.Body>
 				{#if loading}
-					{#each Array(5) as _}
+					{#each Array(5) as _, i (i)}
 						<Table.Row>
 							<Table.Cell><Skeleton class="h-4 w-32" /></Table.Cell>
 							<Table.Cell><Skeleton class="h-4 w-24" /></Table.Cell>

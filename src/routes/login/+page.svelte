@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
 	import GalleryVerticalEndIcon from '@lucide/svelte/icons/gallery-vertical-end';
 	import LoginForm from '$lib/components/login-form.svelte';
@@ -8,7 +9,7 @@
 	// Redirect to dashboard if already authenticated
 	onMount(() => {
 		if (auth.isAuthenticated) {
-			goto('/dashboard');
+			goto(resolve('/dashboard'), { replaceState: true });
 		}
 	});
 </script>
@@ -26,7 +27,7 @@
 				>
 					<GalleryVerticalEndIcon class="size-4" />
 				</div>
-				Acme Inc.
+				RIMS.Dev
 			</a>
 		</div>
 		<div class="flex flex-1 items-center justify-center">

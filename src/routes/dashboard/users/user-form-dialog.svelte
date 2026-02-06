@@ -220,7 +220,7 @@
 				<!-- Selected permissions -->
 				{#if permissions.length > 0}
 					<div class="flex flex-wrap gap-2 rounded-md bg-muted/50 p-3">
-						{#each permissions as perm}
+						{#each permissions as perm (perm)}
 							<Badge variant="secondary" class="gap-1">
 								{perm}
 								<button
@@ -240,7 +240,7 @@
 					<!-- Users -->
 					<div class="space-y-2">
 						<h4 class="text-sm font-medium text-muted-foreground">Users</h4>
-						{#each availablePermissions.filter((p) => p.value.startsWith('users.')) as perm}
+						{#each availablePermissions.filter( (p) => p.value.startsWith('users.') ) as perm (perm.value)}
 							<label class="flex cursor-pointer items-center gap-2">
 								<Checkbox
 									checked={permissions.includes(perm.value)}
@@ -255,7 +255,7 @@
 					<!-- Parts -->
 					<div class="space-y-2">
 						<h4 class="text-sm font-medium text-muted-foreground">Parts</h4>
-						{#each availablePermissions.filter((p) => p.value.startsWith('parts.')) as perm}
+						{#each availablePermissions.filter( (p) => p.value.startsWith('parts.') ) as perm (perm.value)}
 							<label class="flex cursor-pointer items-center gap-2">
 								<Checkbox
 									checked={permissions.includes(perm.value)}
@@ -270,7 +270,7 @@
 					<!-- Receivings -->
 					<div class="space-y-2">
 						<h4 class="text-sm font-medium text-muted-foreground">Receivings</h4>
-						{#each availablePermissions.filter((p) => p.value.startsWith('receivings.')) as perm}
+						{#each availablePermissions.filter( (p) => p.value.startsWith('receivings.') ) as perm (perm.value)}
 							<label class="flex cursor-pointer items-center gap-2">
 								<Checkbox
 									checked={permissions.includes(perm.value)}
@@ -285,7 +285,7 @@
 					<!-- Outgoings -->
 					<div class="space-y-2">
 						<h4 class="text-sm font-medium text-muted-foreground">Outgoings</h4>
-						{#each availablePermissions.filter((p) => p.value.startsWith('outgoings.')) as perm}
+						{#each availablePermissions.filter( (p) => p.value.startsWith('outgoings.') ) as perm (perm.value)}
 							<label class="flex cursor-pointer items-center gap-2">
 								<Checkbox
 									checked={permissions.includes(perm.value)}
@@ -301,7 +301,7 @@
 					<div class="space-y-2 sm:col-span-2">
 						<h4 class="text-sm font-medium text-muted-foreground">Requests</h4>
 						<div class="grid gap-2 sm:grid-cols-3">
-							{#each availablePermissions.filter((p) => p.value.startsWith('requests.')) as perm}
+							{#each availablePermissions.filter( (p) => p.value.startsWith('requests.') ) as perm (perm.value)}
 								<label class="flex cursor-pointer items-center gap-2">
 									<Checkbox
 										checked={permissions.includes(perm.value)}
