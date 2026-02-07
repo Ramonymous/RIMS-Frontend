@@ -17,6 +17,7 @@ export interface PartsListParams extends PaginationParams {
 	search?: string;
 	stock_status?: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock';
 	is_active?: boolean;
+	status_filter?: string;
 }
 
 export async function getParts(params?: PartsListParams): Promise<PaginatedResponse<PartResponse>> {

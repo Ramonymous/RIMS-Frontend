@@ -27,9 +27,13 @@
 
 	// State
 	let parts = $state<PartResponse[]>([]);
+	let total = $state(0);
 	let loading = $state(true);
 	let searchQuery = $state('');
 	let statusFilter = $state<string>('all');
+	let page = $state(1);
+	let limit = $state(20);
+	const pageSizes = [10, 20, 50, 100];
 
 	// Dialog states
 	let formDialogOpen = $state(false);
@@ -44,31 +48,33 @@
 	const canUpdate = $derived(auth.hasPermission('parts.update'));
 	const canDelete = $derived(auth.hasPermission('parts.delete'));
 
-	// Filtered parts
-	const filteredParts = $derived(
-		parts.filter((part) => {
-			const matchesSearch =
-				searchQuery === '' ||
-				part.part_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				part.part_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				(part.customer_code?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
-				(part.supplier_code?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
+	// Pagination helpers
+	const totalPages = $derived(Math.ceil(total / limit));
 
-			const matchesStatus =
-				statusFilter === 'all' ||
-				(statusFilter === 'active' && part.is_active) ||
-				(statusFilter === 'inactive' && !part.is_active) ||
-				statusFilter === part.stock_status;
+	function handlePageChange(newPage: number) {
+		if (newPage < 1 || newPage > totalPages) return;
+		page = newPage;
+		loadParts();
+	}
 
-			return matchesSearch && matchesStatus;
-		})
-	);
+	function handleLimitChange(e: Event) {
+		const newLimit = parseInt((e.target as HTMLSelectElement).value, 10);
+		limit = newLimit;
+		page = 1;
+		loadParts();
+	}
 
 	async function loadParts() {
 		loading = true;
 		try {
-			const response = await getParts();
+			const response = await getParts({
+				page,
+				limit,
+				search: searchQuery || undefined,
+				status_filter: statusFilter !== 'all' ? statusFilter : undefined
+			});
 			parts = response.items;
+			total = response.total;
 		} catch (e) {
 			const error = e as ApiError;
 			toast.error('Failed to load parts', { description: error.detail });
@@ -119,6 +125,12 @@
 
 	function handleImportSuccess() {
 		importDialogOpen = false;
+		loadParts();
+	}
+
+	function handleSearch(e: Event) {
+		e.preventDefault();
+		page = 1;
 		loadParts();
 	}
 
@@ -181,13 +193,14 @@
 	</div>
 
 	<!-- Filters -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+	<form class="flex flex-col gap-4 sm:flex-row sm:items-center" onsubmit={handleSearch}>
 		<div class="relative flex-1">
 			<SearchIcon class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
 			<Input
 				placeholder="Search by part number, name, or code..."
 				bind:value={searchQuery}
 				class="pl-10"
+				autocomplete="off"
 			/>
 		</div>
 		<Select.Root type="single" bind:value={statusFilter}>
@@ -209,10 +222,18 @@
 				<Select.Item value="out_of_stock">Out of Stock</Select.Item>
 			</Select.Content>
 		</Select.Root>
-		<Button variant="outline" size="icon" onclick={loadParts} disabled={loading}>
+		<select class="rounded border px-2 py-1" bind:value={limit} onchange={handleLimitChange}>
+			{#each pageSizes as size}
+				<option value={size}>{size} / page</option>
+			{/each}
+		</select>
+		<Button type="submit" variant="outline" size="icon" disabled={loading} title="Search">
+			<SearchIcon class="size-4" />
+		</Button>
+		<Button variant="outline" size="icon" onclick={loadParts} disabled={loading} title="Refresh">
 			<RefreshIcon class="size-4 {loading ? 'animate-spin' : ''}" />
 		</Button>
-	</div>
+	</form>
 
 	<!-- Table -->
 	<div class="rounded-md border">
@@ -241,7 +262,7 @@
 							<Table.Cell class="text-right"><Skeleton class="ml-auto h-8 w-20" /></Table.Cell>
 						</Table.Row>
 					{/each}
-				{:else if filteredParts.length === 0}
+				{:else if parts.length === 0}
 					<Table.Row>
 						<Table.Cell colspan={7} class="h-24 text-center">
 							<div class="flex flex-col items-center gap-2 text-muted-foreground">
@@ -256,7 +277,7 @@
 						</Table.Cell>
 					</Table.Row>
 				{:else}
-					{#each filteredParts as part (part.id)}
+					{#each parts as part (part.id)}
 						<Table.Row>
 							<Table.Cell class="font-medium">{part.part_number}</Table.Cell>
 							<Table.Cell>{part.part_name}</Table.Cell>
@@ -294,10 +315,43 @@
 		</Table.Root>
 	</div>
 
+	<!-- Pagination -->
+	{#if totalPages > 1 && !loading}
+		<div class="mt-4 flex items-center justify-between">
+			<div class="text-sm text-muted-foreground">
+				Page {page} of {totalPages}
+			</div>
+			<div class="flex gap-1">
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => handlePageChange(page - 1)}
+					disabled={page === 1}>Prev</Button
+				>
+				{#each Array(totalPages) as _, i (i)}
+					<Button
+						variant={page === i + 1 ? 'default' : 'outline'}
+						size="sm"
+						onclick={() => handlePageChange(i + 1)}
+						disabled={page === i + 1}
+					>
+						{i + 1}
+					</Button>
+				{/each}
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => handlePageChange(page + 1)}
+					disabled={page === totalPages}>Next</Button
+				>
+			</div>
+		</div>
+	{/if}
+
 	<!-- Stats -->
 	{#if !loading}
 		<div class="text-sm text-muted-foreground">
-			Showing {filteredParts.length} of {parts.length} parts
+			Showing {parts.length} of {total} parts
 		</div>
 	{/if}
 </div>
