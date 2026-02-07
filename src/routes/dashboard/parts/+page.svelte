@@ -328,7 +328,7 @@
 					onclick={() => handlePageChange(page - 1)}
 					disabled={page === 1}>Prev</Button
 				>
-				{#each Array(totalPages) as _, i (i)}
+				{#each Array(totalPages) as _, i (i + 1)}
 					<Button
 						variant={page === i + 1 ? 'default' : 'outline'}
 						size="sm"

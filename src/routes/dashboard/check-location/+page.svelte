@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { pickRequestItem } from '$lib/api/parts.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { toast } from 'svelte-sonner';
