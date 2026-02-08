@@ -77,12 +77,7 @@
 					</div>
 				{/each}
 			</div>
-			<Button
-				variant="ghost"
-				size="sm"
-				class="mt-4 w-full"
-				href="/dashboard/parts?status=low_stock"
-			>
+			<Button variant="ghost" size="sm" class="mt-4 w-full" href="/app/parts?status=low_stock">
 				View all low stock parts
 				<ArrowRightIcon class="ml-2 size-4" />
 			</Button>

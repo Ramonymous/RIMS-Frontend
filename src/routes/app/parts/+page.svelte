@@ -223,7 +223,7 @@
 			</Select.Content>
 		</Select.Root>
 		<select class="rounded border px-2 py-1" bind:value={limit} onchange={handleLimitChange}>
-			{#each pageSizes as size}
+			{#each pageSizes as size (size)}
 				<option value={size}>{size} / page</option>
 			{/each}
 		</select>

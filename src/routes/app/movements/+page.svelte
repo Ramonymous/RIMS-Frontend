@@ -12,7 +12,7 @@
 	import type { ApiError } from '$lib/api/index.js';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
-	import * as XLSX from 'xlsx';
+	import type * as XLSXNS from 'xlsx';
 	import {
 		formatDateLocal,
 		formatDate as formatDateUtil,
@@ -47,6 +47,35 @@
 	let outgoings = $state<OutgoingResponse[]>([]);
 	let loading = $state(true);
 	let loadingMovements = $state(false);
+
+	let xlsxModule = $state<typeof XLSXNS | null>(null);
+
+	async function getXlsx() {
+		if (xlsxModule) return xlsxModule;
+		xlsxModule = await import('xlsx');
+		return xlsxModule;
+	}
+
+	async function mapWithConcurrency<T, R>(
+		items: readonly T[],
+		limit: number,
+		mapper: (item: T) => Promise<R>
+	) {
+		const results: R[] = [];
+		let index = 0;
+
+		async function worker() {
+			while (index < items.length) {
+				const i = index;
+				index++;
+				results[i] = await mapper(items[i]);
+			}
+		}
+
+		const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
+		await Promise.all(workers);
+		return results;
+	}
 
 	// Stock tab state
 	let stockSearchQuery = $state('');
@@ -126,12 +155,13 @@
 	async function loadAllMovements() {
 		loadingMovements = true;
 		try {
-			// Load movements for all parts
-			const allMovements: PartMovementResponse[] = [];
-			for (const part of parts) {
+			// Load movements for all parts (bounded concurrency to avoid hammering backend)
+			const perPart = await mapWithConcurrency(parts, 5, async (part) => {
 				const partMovementsRes = await getMovementsByPart(part.id, { limit: 100 });
-				allMovements.push(...partMovementsRes.items);
-			}
+				return partMovementsRes.items;
+			});
+
+			const allMovements: PartMovementResponse[] = perPart.flat();
 			// Sort by created_at descending
 			movements = allMovements.sort(
 				(a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -183,7 +213,8 @@
 			.join(' ');
 	}
 
-	function downloadStockReport() {
+	async function downloadStockReport() {
+		const XLSX = await getXlsx();
 		const data = filteredParts.map((part) => ({
 			'Part Number': part.part_number,
 			'Part Name': part.part_name,
@@ -217,7 +248,8 @@
 		toast.success('Stock report downloaded', { description: filename });
 	}
 
-	function downloadMovementsReport() {
+	async function downloadMovementsReport() {
+		const XLSX = await getXlsx();
 		const data = filteredMovements.map((movement) => {
 			const part = getPartInfo(movement.part_id);
 			return {

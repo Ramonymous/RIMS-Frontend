@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
+	import type {
+		Html5Qrcode as Html5QrcodeType,
+		Html5QrcodeScannerState as ScannerStateType
+	} from 'html5-qrcode';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import CameraIcon from '@tabler/icons-svelte/icons/camera';
 	import CameraOffIcon from '@tabler/icons-svelte/icons/camera-off';
@@ -14,7 +17,14 @@
 
 	let { onScan, pauseDuration = 5000, disabled = false }: Props = $props();
 
-	let scanner: Html5Qrcode | null = null;
+	let scanner: Html5QrcodeType | null = null;
+	let qrModule = $state<
+		| (typeof import('html5-qrcode') & {
+				Html5Qrcode: new (elementId: string) => Html5QrcodeType;
+				Html5QrcodeScannerState: typeof ScannerStateType;
+		  })
+		| null
+	>(null);
 	let isScanning = $state(false);
 	let isPaused = $state(false);
 	let isInitializing = $state(false);
@@ -24,6 +34,12 @@
 
 	const scannerId = `qr-scanner-${Math.random().toString(36).substring(7)}`;
 
+	async function getQrModule() {
+		if (qrModule) return qrModule;
+		qrModule = await import('html5-qrcode');
+		return qrModule;
+	}
+
 	async function startScanner() {
 		if (isScanning || isInitializing || disabled) return;
 
@@ -31,7 +47,8 @@
 		error = null;
 
 		try {
-			scanner = new Html5Qrcode(scannerId);
+			const m = await getQrModule();
+			scanner = new m.Html5Qrcode(scannerId);
 
 			const config = {
 				fps: 10, // Balanced for performance
@@ -60,8 +77,12 @@
 		if (!scanner) return;
 
 		try {
+			const m = await getQrModule();
 			const state = scanner.getState();
-			if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+			if (
+				state === m.Html5QrcodeScannerState.SCANNING ||
+				state === m.Html5QrcodeScannerState.PAUSED
+			) {
 				await scanner.stop();
 			}
 			scanner.clear();

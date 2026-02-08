@@ -1,6 +1,8 @@
 <script lang="ts">
-	export let error: Error & { status?: number };
-	export let status: number;
+	import { page } from '$app/state';
+
+	const status = $derived(page.status);
+	const error = $derived(page.error as (Error & { status?: number }) | null);
 </script>
 
 <div class="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-8">

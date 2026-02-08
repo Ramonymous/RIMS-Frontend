@@ -10,6 +10,8 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
+let activeRefreshPromise: Promise<string> | null = null;
+
 export interface ApiError {
 	detail: string;
 	status: number;
@@ -58,6 +60,79 @@ class ApiClient {
 			}
 		}
 		return headers;
+	}
+
+	private decodeJwtPayload(token: string): Record<string, unknown> | null {
+		try {
+			const payloadPart = token.split('.')[1];
+			if (!payloadPart) return null;
+			const b64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+			const padded = b64.padEnd(Math.ceil(b64.length / 4) * 4, '=');
+			const json = atob(padded);
+			return JSON.parse(json) as Record<string, unknown>;
+		} catch {
+			return null;
+		}
+	}
+
+	private isAccessTokenExpiringSoon(token: string, skewSeconds: number = 30): boolean {
+		const payload = this.decodeJwtPayload(token);
+		const exp = payload?.exp;
+		if (typeof exp !== 'number') return false;
+		const nowSeconds = Math.floor(Date.now() / 1000);
+		return exp - nowSeconds <= skewSeconds;
+	}
+
+	private clearTokensAndRedirectToLogin(): void {
+		try {
+			localStorage.removeItem('access_token');
+			localStorage.removeItem('refresh_token');
+		} catch {
+			// ignore
+		}
+
+		if (typeof window !== 'undefined') {
+			window.location.href = '/login';
+		}
+	}
+
+	private async refreshAccessToken(): Promise<string> {
+		if (activeRefreshPromise) return activeRefreshPromise;
+
+		const refreshToken = localStorage.getItem('refresh_token');
+		if (!refreshToken) {
+			this.clearTokensAndRedirectToLogin();
+			throw { detail: 'Not authenticated', status: 401 } as ApiError;
+		}
+
+		activeRefreshPromise = (async () => {
+			const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ refresh_token: refreshToken })
+			});
+
+			if (!refreshRes.ok) {
+				this.clearTokensAndRedirectToLogin();
+				throw { detail: 'Session expired', status: 401 } as ApiError;
+			}
+
+			const data = (await refreshRes.json()) as {
+				access_token: string;
+				refresh_token?: string;
+			};
+
+			localStorage.setItem('access_token', data.access_token);
+			if (data.refresh_token) {
+				localStorage.setItem('refresh_token', data.refresh_token);
+			}
+
+			return data.access_token;
+		})().finally(() => {
+			activeRefreshPromise = null;
+		});
+
+		return activeRefreshPromise;
 	}
 
 	/**
@@ -123,40 +198,47 @@ class ApiClient {
 
 		for (let attempt = 0; attempt <= maxRetries; attempt++) {
 			try {
+				if (!options.noAuth) {
+					const accessToken = localStorage.getItem('access_token');
+					if (accessToken && this.isAccessTokenExpiringSoon(accessToken)) {
+						try {
+							const newAccessToken = await this.refreshAccessToken();
+							if (init.headers && typeof init.headers === 'object') {
+								(init.headers as Record<string, string>)['Authorization'] =
+									`Bearer ${newAccessToken}`;
+							} else {
+								init.headers = { ...this.getAuthHeaders(false) };
+							}
+						} catch {
+							// refreshAccessToken handles redirect
+						}
+					}
+				}
+
 				let response = await fetch(url, {
 					...init,
 					signal: options.signal
 				});
 
-				// Auto refresh token on 401
 				if (response.status === 401 && !options.noAuth) {
-					const refreshToken = localStorage.getItem('refresh_token');
-					if (refreshToken) {
-						const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
-							method: 'POST',
-							headers: { 'Content-Type': 'application/json' },
-							body: JSON.stringify({ refresh_token: refreshToken })
-						});
-						if (refreshRes.ok) {
-							const data = await refreshRes.json();
-							localStorage.setItem('access_token', data.access_token);
-							localStorage.setItem('refresh_token', data.refresh_token);
-							// Retry original request with new access token
-							if (init.headers && typeof init.headers === 'object') {
-								(init.headers as Record<string, string>)['Authorization'] =
-									`Bearer ${data.access_token}`;
-							} else {
-								init.headers = { ...this.getAuthHeaders(false) };
-							}
-							response = await fetch(url, {
-								...init,
-								signal: options.signal
-							});
+					try {
+						const newAccessToken = await this.refreshAccessToken();
+						if (init.headers && typeof init.headers === 'object') {
+							(init.headers as Record<string, string>)['Authorization'] =
+								`Bearer ${newAccessToken}`;
 						} else {
-							// Refresh failed, clear tokens
-							localStorage.removeItem('access_token');
-							localStorage.removeItem('refresh_token');
+							init.headers = { ...this.getAuthHeaders(false) };
 						}
+						response = await fetch(url, {
+							...init,
+							signal: options.signal
+						});
+					} catch {
+						throw { detail: 'Not authenticated', status: 401 } as ApiError;
+					}
+					if (response.status === 401) {
+						this.clearTokensAndRedirectToLogin();
+						throw { detail: 'Not authenticated', status: 401 } as ApiError;
 					}
 				}
 

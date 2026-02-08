@@ -35,7 +35,7 @@
 			toast.success('Login successful', {
 				description: `Welcome back, ${auth.user?.name}!`
 			});
-			goto(resolve('/dashboard'));
+			goto(resolve('/app'));
 		} catch (error) {
 			const apiError = error as ApiError;
 			toast.error('Login failed', {

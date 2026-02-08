@@ -88,10 +88,14 @@
 			// Calculate cutoff without mutating Date objects
 			const cutoffTimestamp = now.getTime() - 7 * 24 * 60 * 60 * 1000;
 			const cutoffDate = new Date(cutoffTimestamp);
-			cutoffDate.setHours(0, 0, 0, 0);
+			const cutoffStartOfDay = new Date(
+				cutoffDate.getFullYear(),
+				cutoffDate.getMonth(),
+				cutoffDate.getDate()
+			);
 
 			const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-			return chartData.filter((item) => item.date >= cutoffDate && item.date >= firstDay);
+			return chartData.filter((item) => item.date >= cutoffStartOfDay && item.date >= firstDay);
 		} else {
 			return chartData;
 		}

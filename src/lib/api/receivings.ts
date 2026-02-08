@@ -28,14 +28,23 @@ function invalidateReceivingsCache(): void {
 export async function getReceivings(
 	params?: ReceivingsListParams
 ): Promise<PaginatedResponse<ReceivingResponse>> {
-	return api.get<PaginatedResponse<ReceivingResponse>>(
-		'/receivings',
-		params as Record<string, string | number | boolean>
+	return apiCache.getOrFetch(
+		cacheKeys.receivings(params as Record<string, unknown> | undefined),
+		() =>
+			api.get<PaginatedResponse<ReceivingResponse>>(
+				'/receivings',
+				params as Record<string, string | number | boolean>
+			),
+		30_000
 	);
 }
 
 export async function getReceiving(id: string): Promise<ReceivingResponse> {
-	return api.get<ReceivingResponse>(`/receivings/${id}`);
+	return apiCache.getOrFetch(
+		`receiving:${id}`,
+		() => api.get<ReceivingResponse>(`/receivings/${id}`),
+		30_000
+	);
 }
 
 export async function createReceiving(data: ReceivingCreate): Promise<ReceivingResponse> {

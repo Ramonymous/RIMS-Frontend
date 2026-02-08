@@ -9,7 +9,7 @@
 	// Redirect to dashboard if already authenticated
 	onMount(() => {
 		if (auth.isAuthenticated) {
-			goto(resolve('/dashboard'), { replaceState: true });
+			goto(resolve('/app'), { replaceState: true });
 		}
 	});
 </script>

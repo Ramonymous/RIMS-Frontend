@@ -21,14 +21,23 @@ export interface PartsListParams extends PaginationParams {
 }
 
 export async function getParts(params?: PartsListParams): Promise<PaginatedResponse<PartResponse>> {
-	return api.get<PaginatedResponse<PartResponse>>(
-		'/parts',
-		params as Record<string, string | number | boolean>
+	return apiCache.getOrFetch(
+		cacheKeys.parts(params as Record<string, unknown> | undefined),
+		() =>
+			api.get<PaginatedResponse<PartResponse>>(
+				'/parts',
+				params as Record<string, string | number | boolean>
+			),
+		30_000
 	);
 }
 
 export async function getPart(id: string): Promise<PartResponse> {
-	return api.get<PartResponse>(`/parts/${id}`);
+	return apiCache.getOrFetch(
+		cacheKeys.part(id),
+		() => api.get<PartResponse>(`/parts/${id}`),
+		30_000
+	);
 }
 
 export async function pickRequestItem(partNumber: string): Promise<PartResponse> {
@@ -71,8 +80,14 @@ export async function getPartMovements(
 	id: string,
 	params?: PaginationParams
 ): Promise<PaginatedResponse<PartMovementResponse>> {
-	return api.get<PaginatedResponse<PartMovementResponse>>(
-		`/parts/${id}/movements`,
-		params as Record<string, string | number | boolean>
+	const cacheKey = `movements:part:${id}:${params ? JSON.stringify(params) : 'all'}`;
+	return apiCache.getOrFetch(
+		cacheKey,
+		() =>
+			api.get<PaginatedResponse<PartMovementResponse>>(
+				`/parts/${id}/movements`,
+				params as Record<string, string | number | boolean>
+			),
+		15_000
 	);
 }

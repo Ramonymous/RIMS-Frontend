@@ -33,14 +33,23 @@ function invalidateRequestsCache(): void {
 export async function getRequests(
 	params?: RequestsListParams
 ): Promise<PaginatedResponse<RequestResponse>> {
-	return api.get<PaginatedResponse<RequestResponse>>(
-		'/requests',
-		params as Record<string, string | number | boolean>
+	return apiCache.getOrFetch(
+		cacheKeys.requests(params as Record<string, unknown> | undefined),
+		() =>
+			api.get<PaginatedResponse<RequestResponse>>(
+				'/requests',
+				params as Record<string, string | number | boolean>
+			),
+		30_000
 	);
 }
 
 export async function getRequest(id: string): Promise<RequestResponse> {
-	return api.get<RequestResponse>(`/requests/${id}`);
+	return apiCache.getOrFetch(
+		`request:${id}`,
+		() => api.get<RequestResponse>(`/requests/${id}`),
+		30_000
+	);
 }
 
 // --- Write Operations ---

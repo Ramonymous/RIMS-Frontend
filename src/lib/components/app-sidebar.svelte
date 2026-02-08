@@ -21,48 +21,48 @@
 	const navMain = [
 		{
 			title: 'Dashboard',
-			url: '/dashboard',
+			url: '/app',
 			icon: DashboardIcon
 		},
 		{
 			title: 'Parts',
-			url: '/dashboard/parts',
+			url: '/app/parts',
 			icon: BoxIcon,
 			requiredPermission: 'parts'
 		},
 		{
 			title: 'Receivings',
-			url: '/dashboard/receivings',
+			url: '/app/receivings',
 			icon: PackageImportIcon
 		},
 		{
 			title: 'Outgoings',
-			url: '/dashboard/outgoings',
+			url: '/app/outgoings',
 			icon: PackageExportIcon
 		},
 		{
 			title: 'Check Location',
-			url: '/dashboard/check-location',
+			url: '/app/check-location',
 			icon: InnerShadowTopIcon
 		},
 		{
 			title: 'Movements',
-			url: '/dashboard/movements',
+			url: '/app/movements',
 			icon: HistoryIcon
 		},
 		{
 			title: 'Requests',
-			url: '/dashboard/requests',
+			url: '/app/requests',
 			icon: ClipboardListIcon
 		},
 		{
 			title: 'Supply',
-			url: '/dashboard/requests/supply',
+			url: '/app/requests/supply',
 			icon: TruckDeliveryIcon
 		},
 		{
 			title: 'Users',
-			url: '/dashboard/users',
+			url: '/app/users',
 			icon: UsersIcon,
 			requiredPermission: 'users'
 		}
@@ -71,12 +71,12 @@
 	const navSecondary = [
 		{
 			title: 'Settings',
-			url: '/dashboard/settings',
+			url: '/app/settings',
 			icon: SettingsIcon
 		},
 		{
 			title: 'Help',
-			url: '/dashboard/help',
+			url: '/app/help',
 			icon: HelpIcon
 		}
 	];
@@ -97,7 +97,7 @@
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton class="data-[slot=sidebar-menu-button]:!p-1.5">
 					{#snippet child({ props })}
-						<a href={resolve('/dashboard')} {...props}>
+						<a href={resolve('/app')} {...props}>
 							<InnerShadowTopIcon class="!size-5" />
 							<span class="text-base font-semibold">ProjectRIMS</span>
 						</a>

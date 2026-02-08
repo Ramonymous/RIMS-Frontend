@@ -3,7 +3,7 @@
 	import type { PartCreate } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { toast } from 'svelte-sonner';
-	import * as XLSX from 'xlsx';
+	import type * as XLSXNS from 'xlsx';
 
 	// Components
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -48,13 +48,22 @@
 	let importing = $state(false);
 	let importProgress = $state(0);
 
+	let xlsxModule = $state<typeof XLSXNS | null>(null);
+
+	async function getXlsx() {
+		if (xlsxModule) return xlsxModule;
+		xlsxModule = await import('xlsx');
+		return xlsxModule;
+	}
+
 	const validRows = $derived(
 		parsedData.filter((row) => row.status === 'pending' && row.part_number && row.part_name)
 	);
 	const successRows = $derived(parsedData.filter((row) => row.status === 'success'));
 	const errorRows = $derived(parsedData.filter((row) => row.status === 'error'));
 
-	function downloadTemplate() {
+	async function downloadTemplate() {
+		const XLSX = await getXlsx();
 		const templateData = [
 			{
 				part_number: 'PN-001',
@@ -112,8 +121,9 @@
 		}
 
 		const reader = new FileReader();
-		reader.onload = (event) => {
+		reader.onload = async (event) => {
 			try {
+				const XLSX = await getXlsx();
 				const data = new Uint8Array(event.target?.result as ArrayBuffer);
 				const workbook = XLSX.read(data, { type: 'array' });
 				const firstSheet = workbook.Sheets[workbook.SheetNames[0]];

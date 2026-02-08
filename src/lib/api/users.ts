@@ -3,7 +3,7 @@
  */
 
 import api from './client.js';
-import { apiCache } from './cache.js';
+import { apiCache, cacheKeys } from './cache.js';
 import type {
 	UserResponse,
 	UserCreate,
@@ -19,14 +19,19 @@ function invalidateUsersCache(): void {
 }
 
 export async function getUsers(params?: UsersListParams): Promise<PaginatedResponse<UserResponse>> {
-	return api.get<PaginatedResponse<UserResponse>>(
-		'/users',
-		params as Record<string, string | number | boolean>
+	return apiCache.getOrFetch(
+		cacheKeys.users(params as Record<string, unknown> | undefined),
+		() =>
+			api.get<PaginatedResponse<UserResponse>>(
+				'/users',
+				params as Record<string, string | number | boolean>
+			),
+		30_000
 	);
 }
 
 export async function getUser(id: string): Promise<UserResponse> {
-	return api.get<UserResponse>(`/users/${id}`);
+	return apiCache.getOrFetch(`user:${id}`, () => api.get<UserResponse>(`/users/${id}`), 30_000);
 }
 
 export async function createUser(data: UserCreate): Promise<UserResponse> {

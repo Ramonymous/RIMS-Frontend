@@ -28,14 +28,23 @@ function invalidateOutgoingsCache(): void {
 export async function getOutgoings(
 	params?: OutgoingsListParams
 ): Promise<PaginatedResponse<OutgoingResponse>> {
-	return api.get<PaginatedResponse<OutgoingResponse>>(
-		'/outgoings',
-		params as Record<string, string | number | boolean>
+	return apiCache.getOrFetch(
+		cacheKeys.outgoings(params as Record<string, unknown> | undefined),
+		() =>
+			api.get<PaginatedResponse<OutgoingResponse>>(
+				'/outgoings',
+				params as Record<string, string | number | boolean>
+			),
+		30_000
 	);
 }
 
 export async function getOutgoing(id: string): Promise<OutgoingResponse> {
-	return api.get<OutgoingResponse>(`/outgoings/${id}`);
+	return apiCache.getOrFetch(
+		`outgoing:${id}`,
+		() => api.get<OutgoingResponse>(`/outgoings/${id}`),
+		30_000
+	);
 }
 
 export async function createOutgoing(data: OutgoingCreate): Promise<OutgoingResponse> {

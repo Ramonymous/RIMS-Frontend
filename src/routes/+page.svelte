@@ -6,7 +6,7 @@
 	onMount(() => {
 		auth.initialize();
 		if (auth.isAuthenticated) {
-			goto('/dashboard');
+			goto('/app');
 		} else {
 			goto('/login');
 		}

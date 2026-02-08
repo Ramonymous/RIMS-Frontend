@@ -5,16 +5,16 @@
 
 	// Map routes to titles
 	const routeTitles: Record<string, string> = {
-		'/dashboard': 'Dashboard',
-		'/dashboard/parts': 'Parts',
-		'/dashboard/receivings': 'Receivings',
-		'/dashboard/outgoings': 'Outgoings',
-		'/dashboard/requests': 'Requests',
-		'/dashboard/requests/supply': 'Supply Requests',
-		'/dashboard/users': 'Users',
-		'/dashboard/settings': 'Settings',
-		'/dashboard/check-location': 'Check Location',
-		'/dashboard/movements': 'Movements'
+		'/app': 'Dashboard',
+		'/app/parts': 'Parts',
+		'/app/receivings': 'Receivings',
+		'/app/outgoings': 'Outgoings',
+		'/app/requests': 'Requests',
+		'/app/requests/supply': 'Supply Requests',
+		'/app/users': 'Users',
+		'/app/settings': 'Settings',
+		'/app/check-location': 'Check Location',
+		'/app/movements': 'Movements'
 	};
 
 	const pageTitle = $derived(routeTitles[page.url.pathname] ?? 'Dashboard');
