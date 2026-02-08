@@ -6,7 +6,7 @@ import api from './client.js';
 import type { LoginRequest, TokenResponse } from './types.js';
 
 export async function login(credentials: LoginRequest): Promise<TokenResponse> {
-	const response = await api.post<TokenResponse>('/auth/login', credentials);
+	const response = await api.post<TokenResponse>('/v1/auth/login', credentials);
 
 	// Store the access token
 	localStorage.setItem('access_token', response.access_token);

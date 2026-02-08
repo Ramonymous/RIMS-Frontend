@@ -65,7 +65,11 @@
 			<h1 class="text-2xl font-bold">New Receiving</h1>
 			<p class="text-muted-foreground">Create an incoming goods receipt</p>
 		</div>
-		<Button variant="outline" onclick={() => goto(resolve('/app/receivings'))} disabled={loading}>
+		<Button
+			variant="outline"
+			onclick={() => goto(resolve('/app/inventory/receivings'))}
+			disabled={loading}
+		>
 			Back
 		</Button>
 	</div>
@@ -85,8 +89,8 @@
 				receiving={null}
 				{parts}
 				docNumber={generateDocNumber()}
-				onCancel={() => goto(resolve('/app/receivings'))}
-				onSuccess={() => goto(resolve('/app/receivings'))}
+				onCancel={() => goto(resolve('/app/inventory/receivings'))}
+				onSuccess={() => goto(resolve('/app/inventory/receivings'))}
 			/>
 		</div>
 	{/if}

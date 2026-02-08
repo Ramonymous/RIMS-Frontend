@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createUser, updateUser } from '$lib/api/users.js';
-	import type { UserResponse, UserCreate, UserUpdate } from '$lib/api/types.js';
+	import type { UserResponse, UserCreate, UserUpdate, UserRole } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { toast } from 'svelte-sonner';
 
@@ -11,6 +11,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Field, FieldLabel, FieldGroup } from '$lib/components/ui/field/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 
 	// Icons
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
@@ -28,8 +29,15 @@
 	let name = $state('');
 	let email = $state('');
 	let password = $state('');
+	let role = $state<UserRole>('inventory');
 	let permissions = $state<string[]>([]);
 	let saving = $state(false);
+
+	const roleOptions: { value: UserRole; label: string }[] = [
+		{ value: 'admin', label: 'Admin' },
+		{ value: 'inventory', label: 'Inventory' },
+		{ value: 'delivery', label: 'Delivery' }
+	];
 
 	// Available permissions
 	const availablePermissions = [
@@ -78,11 +86,13 @@
 				name = user.name;
 				email = user.email;
 				password = '';
+				role = user.role ?? 'inventory';
 				permissions = [...user.permissions];
 			} else {
 				name = '';
 				email = '';
 				password = '';
+				role = 'inventory';
 				permissions = [];
 			}
 		}
@@ -113,6 +123,7 @@
 				const updateData: UserUpdate = {
 					name,
 					email,
+					role,
 					permissions
 				};
 				await updateUser(user.id, updateData);
@@ -124,6 +135,7 @@
 					name,
 					email,
 					password,
+					role,
 					permissions
 				};
 				await createUser(createData);
@@ -173,6 +185,20 @@
 						required
 						disabled={saving}
 					/>
+				</Field>
+
+				<Field>
+					<FieldLabel for="role">Role</FieldLabel>
+					<Select.Root type="single" bind:value={role}>
+						<Select.Trigger id="role" disabled={saving}>
+							{roleOptions.find((r) => r.value === role)?.label ?? 'Select role'}
+						</Select.Trigger>
+						<Select.Content>
+							{#each roleOptions as r (r.value)}
+								<Select.Item value={r.value}>{r.label}</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
 				</Field>
 
 				{#if !isEditing}

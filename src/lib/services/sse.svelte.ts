@@ -65,7 +65,7 @@ class SSEClient {
 		this._state.error = null;
 
 		try {
-			const url = `${API_BASE_URL}/events/stream`;
+			const url = `${API_BASE_URL}/v1/inventory/events/stream`;
 			this.eventSource = new EventSource(url);
 
 			this.eventSource.onopen = () => {

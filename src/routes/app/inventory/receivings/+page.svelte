@@ -2,13 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import {
-		getOutgoings,
-		deleteOutgoing,
-		completeOutgoing,
-		cancelOutgoing,
-		confirmGI
-	} from '$lib/api/outgoings.js';
-	import type { OutgoingResponse } from '$lib/api/types.js';
+		getReceivings,
+		deleteReceiving,
+		completeReceiving,
+		cancelReceiving,
+		confirmGR
+	} from '$lib/api/receivings.js';
+	import type { ReceivingResponse } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { auth } from '$lib/stores/auth.svelte.js';
 	import { toast } from 'svelte-sonner';
@@ -38,7 +38,7 @@
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
 
 	// State
-	let outgoings = $state<OutgoingResponse[]>([]);
+	let receivings = $state<ReceivingResponse[]>([]);
 	let loading = $state(true);
 	let searchQuery = $state('');
 	let statusFilter = $state<string>('all');
@@ -49,28 +49,29 @@
 
 	// Dialog states
 	let deleteDialogOpen = $state(false);
-	let outgoingToDelete = $state<OutgoingResponse | null>(null);
+	let receivingToDelete = $state<ReceivingResponse | null>(null);
 	let actionLoading = $state(false);
 
 	// Permissions
-	const canCreate = $derived(auth.hasPermission('outgoings.create'));
-	const canUpdate = $derived(auth.hasPermission('outgoings.update'));
-	const canDelete = $derived(auth.hasPermission('outgoings.delete'));
-	const canComplete = $derived(auth.hasPermission('outgoings.complete'));
-	const canConfirmGI = $derived(auth.hasPermission('outgoings.confirm_gi'));
+	const canCreate = $derived(auth.hasPermission('receivings.create'));
+	const canUpdate = $derived(auth.hasPermission('receivings.update'));
+	const canDelete = $derived(auth.hasPermission('receivings.delete'));
+	const canComplete = $derived(auth.hasPermission('receivings.complete'));
+	const canConfirmGR = $derived(auth.hasPermission('receivings.confirm_gr'));
 
-	// Filtered outgoings
-	const filteredOutgoings = $derived(
-		outgoings.filter((outgoing) => {
+	// Filtered receivings
+	const filteredReceivings = $derived(
+		receivings.filter((receiving) => {
 			const matchesSearch =
-				searchQuery === '' || outgoing.doc_number.toLowerCase().includes(searchQuery.toLowerCase());
+				searchQuery === '' ||
+				receiving.doc_number.toLowerCase().includes(searchQuery.toLowerCase());
 
-			const matchesStatus = statusFilter === 'all' || outgoing.status === statusFilter;
+			const matchesStatus = statusFilter === 'all' || receiving.status === statusFilter;
 
 			// Date filter
-			const outgoingDate = new Date(outgoing.issued_at).toISOString().split('T')[0];
+			const receivingDate = new Date(receiving.received_at).toISOString().split('T')[0];
 			const matchesDateRange =
-				(!startDate || outgoingDate >= startDate) && (!endDate || outgoingDate <= endDate);
+				(!startDate || receivingDate >= startDate) && (!endDate || receivingDate <= endDate);
 
 			return matchesSearch && matchesStatus && matchesDateRange;
 		})
@@ -79,8 +80,8 @@
 	async function loadData() {
 		loading = true;
 		try {
-			const outgoingsRes = await getOutgoings();
-			outgoings = outgoingsRes.items;
+			const receivingsRes = await getReceivings();
+			receivings = receivingsRes.items;
 		} catch (e) {
 			const error = e as ApiError;
 			toast.error('Failed to load data', { description: error.detail });
@@ -90,81 +91,81 @@
 	}
 
 	function openCreateDialog() {
-		goto(resolve('/app/outgoings/new'));
+		goto(resolve('/app/inventory/receivings/new'));
 	}
 
-	function openEditDialog(outgoing: OutgoingResponse) {
-		goto(resolve(`/app/outgoings/${outgoing.id}/edit`));
+	function openEditDialog(receiving: ReceivingResponse) {
+		goto(resolve(`/app/inventory/receivings/${receiving.id}/edit`));
 	}
 
-	function openDeleteDialog(outgoing: OutgoingResponse) {
-		outgoingToDelete = outgoing;
+	function openDeleteDialog(receiving: ReceivingResponse) {
+		receivingToDelete = receiving;
 		deleteDialogOpen = true;
 	}
 
 	async function confirmDelete() {
-		if (!outgoingToDelete) return;
+		if (!receivingToDelete) return;
 
 		actionLoading = true;
 		try {
-			await deleteOutgoing(outgoingToDelete.id);
-			toast.success('Outgoing deleted', {
-				description: `${outgoingToDelete.doc_number} has been deleted.`
+			await deleteReceiving(receivingToDelete.id);
+			toast.success('Receiving deleted', {
+				description: `${receivingToDelete.doc_number} has been deleted.`
 			});
 			deleteDialogOpen = false;
-			outgoingToDelete = null;
+			receivingToDelete = null;
 			await loadData();
 		} catch (e) {
 			const error = e as ApiError;
-			toast.error('Failed to delete outgoing', { description: error.detail });
+			toast.error('Failed to delete receiving', { description: error.detail });
 		} finally {
 			actionLoading = false;
 		}
 	}
 
-	async function handleComplete(outgoing: OutgoingResponse) {
+	async function handleComplete(receiving: ReceivingResponse) {
 		actionLoading = true;
 		try {
-			await completeOutgoing(outgoing.id);
-			toast.success('Outgoing completed', {
-				description: `${outgoing.doc_number} has been completed. Stock updated.`
+			await completeReceiving(receiving.id);
+			toast.success('Receiving completed', {
+				description: `${receiving.doc_number} has been completed. Stock updated.`
 			});
 			await loadData();
 		} catch (e) {
 			const error = e as ApiError;
-			toast.error('Failed to complete outgoing', { description: error.detail });
+			toast.error('Failed to complete receiving', { description: error.detail });
 		} finally {
 			actionLoading = false;
 		}
 	}
 
-	async function handleCancel(outgoing: OutgoingResponse) {
+	async function handleCancel(receiving: ReceivingResponse) {
 		actionLoading = true;
 		try {
-			await cancelOutgoing(outgoing.id);
-			toast.success('Outgoing cancelled', {
-				description: `${outgoing.doc_number} has been cancelled.`
+			await cancelReceiving(receiving.id);
+			toast.success('Receiving cancelled', {
+				description: `${receiving.doc_number} has been cancelled.`
 			});
 			await loadData();
 		} catch (e) {
 			const error = e as ApiError;
-			toast.error('Failed to cancel outgoing', { description: error.detail });
+			toast.error('Failed to cancel receiving', { description: error.detail });
 		} finally {
 			actionLoading = false;
 		}
 	}
 
-	async function handleConfirmGI(outgoing: OutgoingResponse) {
+	async function handleConfirmGR(receiving: ReceivingResponse) {
 		actionLoading = true;
 		try {
-			await confirmGI(outgoing.id);
-			toast.success('GI confirmed', {
-				description: `${outgoing.doc_number} has been confirmed as Goods Issue.`
+			await confirmGR(receiving.id);
+			toast.success('GR confirmed', {
+				description: `${receiving.doc_number} has been confirmed as Goods Receipt.`
 			});
 			await loadData();
 		} catch (e) {
 			const error = e as ApiError;
-			toast.error('Failed to confirm GI', { description: error.detail });
+			toast.error('Failed to confirm GR', { description: error.detail });
 		} finally {
 			actionLoading = false;
 		}
@@ -185,8 +186,8 @@
 
 	// formatDate is imported from $lib/utils.js
 
-	function isEditable(outgoing: OutgoingResponse): boolean {
-		return !outgoing.is_gi && outgoing.status === 'draft';
+	function isEditable(receiving: ReceivingResponse): boolean {
+		return !receiving.is_gr && receiving.status === 'draft';
 	}
 
 	onMount(() => {
@@ -195,21 +196,21 @@
 </script>
 
 <svelte:head>
-	<title>Outgoings - ProjectRIMS</title>
+	<title>Receivings - ProjectRIMS</title>
 </svelte:head>
 
 <div class="flex flex-col gap-4 p-4 md:p-6">
 	<!-- Header -->
 	<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
 		<div class="space-y-1">
-			<h1 class="text-3xl font-semibold tracking-tight">Outgoings</h1>
-			<p class="text-sm text-muted-foreground">Manage outgoing goods issues</p>
+			<h1 class="text-3xl font-semibold tracking-tight">Receivings</h1>
+			<p class="text-sm text-muted-foreground">Manage incoming goods receipts</p>
 		</div>
 		<div class="hidden gap-2 sm:flex">
 			{#if canCreate}
 				<Button onclick={openCreateDialog}>
 					<PlusIcon class="size-4" />
-					New Outgoing
+					New Receiving
 				</Button>
 			{/if}
 		</div>
@@ -269,47 +270,47 @@
 					</div>
 				</div>
 			{/each}
-		{:else if filteredOutgoings.length === 0}
+		{:else if filteredReceivings.length === 0}
 			<div class="rounded-xl border bg-card p-6 text-center">
-				<p class="text-sm text-muted-foreground">No outgoings found</p>
+				<p class="text-sm text-muted-foreground">No receivings found</p>
 				{#if canCreate}
 					<div class="mt-3">
 						<Button variant="outline" size="sm" onclick={openCreateDialog}>
 							<PlusIcon class="size-4" />
-							Create your first outgoing
+							Create your first receiving
 						</Button>
 					</div>
 				{/if}
 			</div>
 		{:else}
-			{#each filteredOutgoings as outgoing (outgoing.id)}
+			{#each filteredReceivings as receiving (receiving.id)}
 				<div class="rounded-xl border bg-card p-4">
 					<div class="flex items-start justify-between gap-3">
 						<div class="min-w-0">
-							<div class="truncate font-mono text-base font-semibold">{outgoing.doc_number}</div>
+							<div class="truncate font-mono text-base font-semibold">{receiving.doc_number}</div>
 							<div class="mt-1 text-sm text-muted-foreground">
-								{formatDate(outgoing.issued_at)}
+								{formatDate(receiving.received_at)}
 							</div>
 						</div>
-						<Badge variant={getStatusVariant(outgoing.status)}>
-							{outgoing.status.charAt(0).toUpperCase() + outgoing.status.slice(1)}
+						<Badge variant={getStatusVariant(receiving.status)}>
+							{receiving.status.charAt(0).toUpperCase() + receiving.status.slice(1)}
 						</Badge>
 					</div>
 
 					<div class="mt-3 flex items-center justify-between text-sm">
 						<div class="text-muted-foreground">
 							Items
-							<span class="ml-1 font-medium text-foreground">{outgoing.total_items}</span>
+							<span class="ml-1 font-medium text-foreground">{receiving.total_items}</span>
 						</div>
 						<div class="text-muted-foreground">
-							GI
-							<span class="ml-1 font-medium text-foreground">{outgoing.is_gi ? 'Yes' : 'No'}</span>
+							GR
+							<span class="ml-1 font-medium text-foreground">{receiving.is_gr ? 'Yes' : 'No'}</span>
 						</div>
 					</div>
 
 					<div class="mt-4 flex items-center justify-end gap-2">
-						{#if canUpdate && isEditable(outgoing)}
-							<Button variant="outline" size="sm" onclick={() => openEditDialog(outgoing)}>
+						{#if canUpdate && isEditable(receiving)}
+							<Button variant="outline" size="sm" onclick={() => openEditDialog(receiving)}>
 								<PencilIcon class="size-4" />
 								Edit
 							</Button>
@@ -323,27 +324,27 @@
 								{/snippet}
 							</DropdownMenu.Trigger>
 							<DropdownMenu.Content align="end">
-								{#if canComplete && outgoing.status === 'draft'}
-									<DropdownMenu.Item onclick={() => handleComplete(outgoing)}>
+								{#if canComplete && receiving.status === 'draft'}
+									<DropdownMenu.Item onclick={() => handleComplete(receiving)}>
 										<CheckIcon class="size-4" />
 										Complete
 									</DropdownMenu.Item>
-									<DropdownMenu.Item onclick={() => handleCancel(outgoing)}>
+									<DropdownMenu.Item onclick={() => handleCancel(receiving)}>
 										<XIcon class="size-4" />
 										Cancel
 									</DropdownMenu.Item>
 								{/if}
-								{#if canConfirmGI && outgoing.status === 'completed' && !outgoing.is_gi}
-									<DropdownMenu.Item onclick={() => handleConfirmGI(outgoing)}>
+								{#if canConfirmGR && receiving.status === 'completed' && !receiving.is_gr}
+									<DropdownMenu.Item onclick={() => handleConfirmGR(receiving)}>
 										<CircleCheckIcon class="size-4" />
-										Confirm GI
+										Confirm GR
 									</DropdownMenu.Item>
 								{/if}
-								{#if canDelete && outgoing.status === 'draft'}
+								{#if canDelete && receiving.status === 'draft'}
 									<DropdownMenu.Separator />
 									<DropdownMenu.Item
 										class="text-destructive"
-										onclick={() => openDeleteDialog(outgoing)}
+										onclick={() => openDeleteDialog(receiving)}
 									>
 										<TrashIcon class="size-4" />
 										Delete
@@ -363,10 +364,10 @@
 			<Table.Header>
 				<Table.Row>
 					<Table.Head>Doc Number</Table.Head>
-					<Table.Head>Issued At</Table.Head>
+					<Table.Head>Received At</Table.Head>
 					<Table.Head class="text-right">Total Items</Table.Head>
 					<Table.Head>Status</Table.Head>
-					<Table.Head>GI</Table.Head>
+					<Table.Head>GR</Table.Head>
 					<Table.Head class="text-right">Actions</Table.Head>
 				</Table.Row>
 			</Table.Header>
@@ -382,33 +383,33 @@
 							<Table.Cell class="text-right"><Skeleton class="ml-auto h-8 w-8" /></Table.Cell>
 						</Table.Row>
 					{/each}
-				{:else if filteredOutgoings.length === 0}
+				{:else if filteredReceivings.length === 0}
 					<Table.Row>
 						<Table.Cell colspan={6} class="h-24 text-center">
 							<div class="flex flex-col items-center gap-2 text-muted-foreground">
-								<p>No outgoings found</p>
+								<p>No receivings found</p>
 								{#if canCreate}
 									<Button variant="outline" size="sm" onclick={openCreateDialog}>
 										<PlusIcon class="size-4" />
-										Create your first outgoing
+										Create your first receiving
 									</Button>
 								{/if}
 							</div>
 						</Table.Cell>
 					</Table.Row>
 				{:else}
-					{#each filteredOutgoings as outgoing (outgoing.id)}
+					{#each filteredReceivings as receiving (receiving.id)}
 						<Table.Row>
-							<Table.Cell class="font-medium">{outgoing.doc_number}</Table.Cell>
-							<Table.Cell>{formatDate(outgoing.issued_at)}</Table.Cell>
-							<Table.Cell class="text-right">{outgoing.total_items}</Table.Cell>
+							<Table.Cell class="font-medium">{receiving.doc_number}</Table.Cell>
+							<Table.Cell>{formatDate(receiving.received_at)}</Table.Cell>
+							<Table.Cell class="text-right">{receiving.total_items}</Table.Cell>
 							<Table.Cell>
-								<Badge variant={getStatusVariant(outgoing.status)}>
-									{outgoing.status.charAt(0).toUpperCase() + outgoing.status.slice(1)}
+								<Badge variant={getStatusVariant(receiving.status)}>
+									{receiving.status.charAt(0).toUpperCase() + receiving.status.slice(1)}
 								</Badge>
 							</Table.Cell>
 							<Table.Cell>
-								{#if outgoing.is_gi}
+								{#if receiving.is_gr}
 									<Badge variant="default">
 										<CheckIcon class="size-3" />
 									</Badge>
@@ -426,33 +427,33 @@
 										{/snippet}
 									</DropdownMenu.Trigger>
 									<DropdownMenu.Content align="end">
-										{#if canUpdate && isEditable(outgoing)}
-											<DropdownMenu.Item onclick={() => openEditDialog(outgoing)}>
+										{#if canUpdate && isEditable(receiving)}
+											<DropdownMenu.Item onclick={() => openEditDialog(receiving)}>
 												<PencilIcon class="size-4" />
 												Edit
 											</DropdownMenu.Item>
 										{/if}
-										{#if canComplete && outgoing.status === 'draft'}
-											<DropdownMenu.Item onclick={() => handleComplete(outgoing)}>
+										{#if canComplete && receiving.status === 'draft'}
+											<DropdownMenu.Item onclick={() => handleComplete(receiving)}>
 												<CheckIcon class="size-4" />
 												Complete
 											</DropdownMenu.Item>
-											<DropdownMenu.Item onclick={() => handleCancel(outgoing)}>
+											<DropdownMenu.Item onclick={() => handleCancel(receiving)}>
 												<XIcon class="size-4" />
 												Cancel
 											</DropdownMenu.Item>
 										{/if}
-										{#if canConfirmGI && outgoing.status === 'completed' && !outgoing.is_gi}
-											<DropdownMenu.Item onclick={() => handleConfirmGI(outgoing)}>
+										{#if canConfirmGR && receiving.status === 'completed' && !receiving.is_gr}
+											<DropdownMenu.Item onclick={() => handleConfirmGR(receiving)}>
 												<CircleCheckIcon class="size-4" />
-												Confirm GI
+												Confirm GR
 											</DropdownMenu.Item>
 										{/if}
-										{#if canDelete && outgoing.status === 'draft'}
+										{#if canDelete && receiving.status === 'draft'}
 											<DropdownMenu.Separator />
 											<DropdownMenu.Item
 												class="text-destructive"
-												onclick={() => openDeleteDialog(outgoing)}
+												onclick={() => openDeleteDialog(receiving)}
 											>
 												<TrashIcon class="size-4" />
 												Delete
@@ -471,7 +472,7 @@
 	<!-- Stats -->
 	{#if !loading}
 		<div class="text-sm text-muted-foreground">
-			Showing {filteredOutgoings.length} of {outgoings.length} outgoings
+			Showing {filteredReceivings.length} of {receivings.length} receivings
 		</div>
 	{/if}
 </div>
@@ -481,10 +482,10 @@
 		<Button
 			class="size-14 rounded-full p-0 shadow-lg"
 			onclick={openCreateDialog}
-			aria-label="New Outgoing"
+			aria-label="New Receiving"
 		>
 			<PlusIcon class="size-6" />
-			<span class="sr-only">New Outgoing</span>
+			<span class="sr-only">New Receiving</span>
 		</Button>
 	</div>
 {/if}
@@ -493,10 +494,10 @@
 <AlertDialog.Root bind:open={deleteDialogOpen}>
 	<AlertDialog.Content>
 		<AlertDialog.Header>
-			<AlertDialog.Title>Delete Outgoing</AlertDialog.Title>
+			<AlertDialog.Title>Delete Receiving</AlertDialog.Title>
 			<AlertDialog.Description>
-				Are you sure you want to delete <strong>{outgoingToDelete?.doc_number}</strong>? This action
-				cannot be undone.
+				Are you sure you want to delete <strong>{receivingToDelete?.doc_number}</strong>? This
+				action cannot be undone.
 			</AlertDialog.Description>
 		</AlertDialog.Header>
 		<AlertDialog.Footer>

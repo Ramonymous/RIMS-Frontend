@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import GalleryVerticalEndIcon from '@lucide/svelte/icons/gallery-vertical-end';
 	import LoginForm from '$lib/components/login-form.svelte';
-	import { auth } from '$lib/stores/auth.svelte';
+	import { auth } from '$lib/stores/auth.svelte.js';
 
 	// Redirect to dashboard if already authenticated
 	onMount(() => {

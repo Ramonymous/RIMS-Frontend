@@ -65,7 +65,11 @@
 			<h1 class="text-2xl font-bold">New Outgoing</h1>
 			<p class="text-muted-foreground">Create an outgoing goods issue</p>
 		</div>
-		<Button variant="outline" onclick={() => goto(resolve('/app/outgoings'))} disabled={loading}>
+		<Button
+			variant="outline"
+			onclick={() => goto(resolve('/app/inventory/outgoings'))}
+			disabled={loading}
+		>
 			Back
 		</Button>
 	</div>
@@ -85,8 +89,8 @@
 				outgoing={null}
 				{parts}
 				docNumber={generateDocNumber()}
-				onCancel={() => goto(resolve('/app/outgoings'))}
-				onSuccess={() => goto(resolve('/app/outgoings'))}
+				onCancel={() => goto(resolve('/app/inventory/outgoings'))}
+				onSuccess={() => goto(resolve('/app/inventory/outgoings'))}
 			/>
 		</div>
 	{/if}

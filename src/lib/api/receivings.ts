@@ -32,7 +32,7 @@ export async function getReceivings(
 		cacheKeys.receivings(params as Record<string, unknown> | undefined),
 		() =>
 			api.get<PaginatedResponse<ReceivingResponse>>(
-				'/receivings',
+				'/v1/inventory/receivings',
 				params as Record<string, string | number | boolean>
 			),
 		30_000
@@ -42,13 +42,13 @@ export async function getReceivings(
 export async function getReceiving(id: string): Promise<ReceivingResponse> {
 	return apiCache.getOrFetch(
 		`receiving:${id}`,
-		() => api.get<ReceivingResponse>(`/receivings/${id}`),
+		() => api.get<ReceivingResponse>(`/v1/inventory/receivings/${id}`),
 		30_000
 	);
 }
 
 export async function createReceiving(data: ReceivingCreate): Promise<ReceivingResponse> {
-	const result = await api.post<ReceivingResponse>('/receivings', data);
+	const result = await api.post<ReceivingResponse>('/v1/inventory/receivings', data);
 	invalidateReceivingsCache();
 	return result;
 }
@@ -57,30 +57,30 @@ export async function updateReceiving(
 	id: string,
 	data: ReceivingUpdate
 ): Promise<ReceivingResponse> {
-	const result = await api.put<ReceivingResponse>(`/receivings/${id}`, data);
+	const result = await api.put<ReceivingResponse>(`/v1/inventory/receivings/${id}`, data);
 	invalidateReceivingsCache();
 	return result;
 }
 
 export async function deleteReceiving(id: string): Promise<void> {
-	await api.delete<void>(`/receivings/${id}`);
+	await api.delete<void>(`/v1/inventory/receivings/${id}`);
 	invalidateReceivingsCache();
 }
 
 export async function completeReceiving(id: string): Promise<ReceivingResponse> {
-	const result = await api.put<ReceivingResponse>(`/receivings/${id}/complete`);
+	const result = await api.put<ReceivingResponse>(`/v1/inventory/receivings/${id}/complete`);
 	invalidateReceivingsCache();
 	return result;
 }
 
 export async function cancelReceiving(id: string): Promise<ReceivingResponse> {
-	const result = await api.put<ReceivingResponse>(`/receivings/${id}/cancel`);
+	const result = await api.put<ReceivingResponse>(`/v1/inventory/receivings/${id}/cancel`);
 	invalidateReceivingsCache();
 	return result;
 }
 
 export async function confirmGR(id: string): Promise<ReceivingResponse> {
-	const result = await api.put<ReceivingResponse>(`/receivings/${id}/confirm-gr`);
+	const result = await api.put<ReceivingResponse>(`/v1/inventory/receivings/${id}/confirm-gr`);
 	invalidateReceivingsCache();
 	return result;
 }

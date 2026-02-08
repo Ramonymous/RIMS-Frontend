@@ -130,6 +130,7 @@
 					<Table.Head class="w-12"></Table.Head>
 					<Table.Head>Name</Table.Head>
 					<Table.Head>Email</Table.Head>
+					<Table.Head>Role</Table.Head>
 					<Table.Head>Permissions</Table.Head>
 					<Table.Head>Created</Table.Head>
 					<Table.Head class="w-24 text-right">Actions</Table.Head>
@@ -142,6 +143,7 @@
 							<Table.Cell><Skeleton class="size-8 rounded-full" /></Table.Cell>
 							<Table.Cell><Skeleton class="h-4 w-32" /></Table.Cell>
 							<Table.Cell><Skeleton class="h-4 w-40" /></Table.Cell>
+							<Table.Cell><Skeleton class="h-4 w-20" /></Table.Cell>
 							<Table.Cell><Skeleton class="h-4 w-24" /></Table.Cell>
 							<Table.Cell><Skeleton class="h-4 w-20" /></Table.Cell>
 							<Table.Cell><Skeleton class="h-8 w-16" /></Table.Cell>
@@ -149,7 +151,7 @@
 					{/each}
 				{:else if users.length === 0}
 					<Table.Row>
-						<Table.Cell colspan={6} class="h-24 text-center">
+						<Table.Cell colspan={7} class="h-24 text-center">
 							<div class="flex flex-col items-center gap-2">
 								<UserIcon class="size-8 text-muted-foreground" />
 								<p class="text-muted-foreground">No users found.</p>
@@ -176,6 +178,7 @@
 								{/if}
 							</Table.Cell>
 							<Table.Cell class="text-muted-foreground">{user.email}</Table.Cell>
+							<Table.Cell class="text-sm text-muted-foreground">{user.role ?? '-'}</Table.Cell>
 							<Table.Cell>
 								{#if user.permissions.length === 0}
 									<span class="text-sm text-muted-foreground">No permissions</span>

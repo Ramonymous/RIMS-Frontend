@@ -3,33 +3,33 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { getOutgoing } from '$lib/api/outgoings.js';
+	import { getRequest } from '$lib/api/requests.js';
 	import { getParts } from '$lib/api/parts.js';
-	import type { OutgoingResponse, PartResponse } from '$lib/api/types.js';
+	import type { PartResponse, RequestResponse } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { auth } from '$lib/stores/auth.svelte.js';
 	import { toast } from 'svelte-sonner';
 
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-	import OutgoingForm from '../../outgoing-form.svelte';
+	import RequestForm from '../../request-form.svelte';
 
-	let outgoing = $state<OutgoingResponse | null>(null);
+	let request = $state<RequestResponse | null>(null);
 	let parts = $state<PartResponse[]>([]);
 	let loading = $state(true);
 
-	const canUpdate = $derived(auth.hasPermission('outgoings.update'));
+	const canUpdate = $derived(auth.hasPermission('requests.update'));
 
 	onMount(async () => {
 		loading = true;
 		try {
-			const outgoingId = $page.params.outgoingId;
-			if (!outgoingId) {
-				toast.error('Invalid route', { description: 'Missing outgoing id.' });
+			const requestId = $page.params.requestId;
+			if (!requestId) {
+				toast.error('Invalid route', { description: 'Missing request id.' });
 				return;
 			}
-			const [outgoingRes, partsRes] = await Promise.all([getOutgoing(outgoingId), getParts()]);
-			outgoing = outgoingRes;
+			const [requestRes, partsRes] = await Promise.all([getRequest(requestId), getParts()]);
+			request = requestRes;
 			parts = partsRes.items;
 		} catch (e) {
 			const error = e as ApiError;
@@ -41,41 +41,45 @@
 </script>
 
 <svelte:head>
-	<title>Edit Outgoing - ProjectRIMS</title>
+	<title>Edit Request - ProjectRIMS</title>
 </svelte:head>
 
 <div class="flex flex-col gap-4 p-4 md:p-6">
 	<div class="flex items-center justify-between gap-2">
 		<div>
-			<h1 class="text-2xl font-bold">Edit Outgoing</h1>
-			<p class="text-muted-foreground">Update an outgoing goods issue</p>
+			<h1 class="text-2xl font-bold">Edit Request</h1>
+			<p class="text-muted-foreground">Update a part request</p>
 		</div>
-		<Button variant="outline" onclick={() => goto(resolve('/app/outgoings'))} disabled={loading}>
+		<Button
+			variant="outline"
+			onclick={() => goto(resolve('/app/inventory/requests'))}
+			disabled={loading}
+		>
 			Back
 		</Button>
 	</div>
 
 	{#if !canUpdate}
 		<div class="rounded-md border p-6">
-			<p class="text-sm text-muted-foreground">You don't have permission to update outgoings.</p>
+			<p class="text-sm text-muted-foreground">You don't have permission to update requests.</p>
 		</div>
 	{:else if loading}
 		<div class="space-y-4">
 			<Skeleton class="h-10 w-72" />
 			<Skeleton class="h-64 w-full" />
 		</div>
-	{:else if !outgoing}
+	{:else if !request}
 		<div class="rounded-md border p-6">
-			<p class="text-sm text-muted-foreground">Outgoing not found.</p>
+			<p class="text-sm text-muted-foreground">Request not found.</p>
 		</div>
 	{:else}
 		<div class="w-full rounded-xl border bg-card p-4 md:p-6">
-			<OutgoingForm
-				{outgoing}
+			<RequestForm
+				{request}
 				{parts}
-				docNumber={outgoing.doc_number}
-				onCancel={() => goto(resolve('/app/outgoings'))}
-				onSuccess={() => goto(resolve('/app/outgoings'))}
+				requestNumber={request.request_number}
+				onCancel={() => goto(resolve('/app/inventory/requests'))}
+				onSuccess={() => goto(resolve('/app/inventory/requests'))}
 			/>
 		</div>
 	{/if}

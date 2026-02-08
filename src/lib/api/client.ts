@@ -106,7 +106,7 @@ class ApiClient {
 		}
 
 		activeRefreshPromise = (async () => {
-			const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+			const refreshRes = await fetch(`${API_BASE_URL}/v1/auth/refresh`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ refresh_token: refreshToken })

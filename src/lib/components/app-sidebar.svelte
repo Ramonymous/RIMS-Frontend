@@ -5,6 +5,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { ComponentProps } from 'svelte';
 	import { auth } from '$lib/stores/auth.svelte.js';
+	import { page } from '$app/state';
 	import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
 	import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 	import ArrowLeftRightIcon from '@lucide/svelte/icons/arrow-left-right';
@@ -24,12 +25,23 @@
 
 	const canSeeParts = $derived(hasAnyPermission('parts'));
 	const canSeeUsers = $derived(hasAnyPermission('users'));
+	const pathname = $derived(String(page.url.pathname));
+	const isDelivery = $derived(
+		pathname === '/app/delivery' || pathname.startsWith('/app/delivery/')
+	);
 
 	const teams = $derived([
 		{
-			name: 'ProjectRIMS',
+			name: 'Inventory',
 			logo: LayersIcon,
-			plan: 'Inventory'
+			plan: 'ProjectRIMS',
+			url: '/app/inventory'
+		},
+		{
+			name: 'Delivery',
+			logo: LayersIcon,
+			plan: 'Coming Soon',
+			url: '/app/delivery'
 		}
 	]);
 
@@ -39,10 +51,10 @@
 		avatar: ''
 	});
 
-	const navMain = $derived([
+	const inventoryNav = $derived([
 		{
 			title: 'Dashboard',
-			url: '/app',
+			url: '/app/inventory',
 			icon: LayoutDashboardIcon
 		},
 		{
@@ -50,10 +62,10 @@
 			url: '#',
 			icon: ClipboardListIcon,
 			items: [
-				{ title: 'Receivings', url: '/app/receivings' },
-				{ title: 'Outgoings', url: '/app/outgoings' },
-				{ title: 'Requests', url: '/app/requests' },
-				{ title: 'Supply', url: '/app/requests/supply' }
+				{ title: 'Receivings', url: '/app/inventory/receivings' },
+				{ title: 'Outgoings', url: '/app/inventory/outgoings' },
+				{ title: 'Requests', url: '/app/inventory/requests' },
+				{ title: 'Supply', url: '/app/inventory/requests/supply' }
 			]
 		},
 		{
@@ -61,32 +73,46 @@
 			url: '#',
 			icon: ArrowLeftRightIcon,
 			items: [
-				{ title: 'Movements', url: '/app/movements' },
-				{ title: 'Check Location', url: '/app/check-location' }
+				{ title: 'Movements', url: '/app/inventory/movements' },
+				{ title: 'Check Location', url: '/app/inventory/check-location' }
 			]
 		}
 	]);
 
-	const adminNav = $derived([
-		...(canSeeParts
-			? [
-					{
-						title: 'Parts',
-						url: '/app/parts',
-						icon: BoxesIcon
-					}
-				]
-			: []),
-		...(canSeeUsers
-			? [
-					{
-						title: 'Users',
-						url: '/app/users',
-						icon: UsersIcon
-					}
-				]
-			: [])
+	const deliveryNav = $derived([
+		{
+			title: 'Dashboard',
+			url: '/app/delivery',
+			icon: LayoutDashboardIcon
+		}
 	]);
+
+	const navMain = $derived(isDelivery ? deliveryNav : inventoryNav);
+
+	const adminNav = $derived(
+		isDelivery
+			? []
+			: [
+					...(canSeeParts
+						? [
+								{
+									title: 'Parts',
+									url: '/app/parts',
+									icon: BoxesIcon
+								}
+							]
+						: []),
+					...(canSeeUsers
+						? [
+								{
+									title: 'Users',
+									url: '/app/users',
+									icon: UsersIcon
+								}
+							]
+						: [])
+				]
+	);
 </script>
 
 <Sidebar.Root {collapsible} {...restProps}>

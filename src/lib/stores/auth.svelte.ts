@@ -48,6 +48,9 @@ function createAuthStore() {
 		get user() {
 			return user;
 		},
+		get role() {
+			return user?.role;
+		},
 		get token() {
 			return token;
 		},

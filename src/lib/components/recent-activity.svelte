@@ -94,7 +94,7 @@
 							</div>
 						{/each}
 					</div>
-					<Button variant="ghost" size="sm" class="mt-4 w-full" href="/app/receivings">
+					<Button variant="ghost" size="sm" class="mt-4 w-full" href="/app/inventory/receivings">
 						View all receivings
 						<ArrowRightIcon class="ml-2 size-4" />
 					</Button>
@@ -132,7 +132,7 @@
 							</div>
 						{/each}
 					</div>
-					<Button variant="ghost" size="sm" class="mt-4 w-full" href="/app/outgoings">
+					<Button variant="ghost" size="sm" class="mt-4 w-full" href="/app/inventory/outgoings">
 						View all outgoings
 						<ArrowRightIcon class="ml-2 size-4" />
 					</Button>

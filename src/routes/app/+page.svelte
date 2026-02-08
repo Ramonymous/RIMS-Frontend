@@ -1,59 +1,28 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import SectionCards from '$lib/components/section-cards.svelte';
-	import RecentActivity from '$lib/components/recent-activity.svelte';
-	import LowStockAlert from '$lib/components/low-stock-alert.svelte';
-	import MovementChart from '$lib/components/movement-chart.svelte';
-	import { getDashboardStats, type DashboardData } from '$lib/api/dashboard.js';
-	import { getParts } from '$lib/api/parts.js';
-	import { toast } from 'svelte-sonner';
-	import type { ApiError } from '$lib/api/index.js';
-
-	let dashboardData = $state<DashboardData | null>(null);
-	let loading = $state(true);
-	let error = $state<string | null>(null);
-
-	async function loadDashboard() {
-		loading = true;
-		error = null;
-		try {
-			dashboardData = await getDashboardStats();
-
-			// If dashboard stats indicate alerts but the list is empty (or only contains one status),
-			// fetch a small set of parts to populate the panel. Navigation still goes to Movements.
-			if (dashboardData) {
-				const lowStockCount = dashboardData.stats?.parts?.lowStock ?? 0;
-				const outOfStockCount = dashboardData.stats?.parts?.outOfStock ?? 0;
-				const existing = dashboardData.lowStockParts ?? [];
-
-				if (lowStockCount + outOfStockCount > 0 && existing.length === 0) {
-					const [outRes, lowRes] = await Promise.all([
-						outOfStockCount > 0
-							? getParts({ stock_status: 'out_of_stock', limit: 5 })
-							: Promise.resolve({ items: [], total: 0, page: 1, limit: 5 }),
-						lowStockCount > 0
-							? getParts({ stock_status: 'low_stock', limit: 5 })
-							: Promise.resolve({ items: [], total: 0, page: 1, limit: 5 })
-					]);
-
-					const merged = [...outRes.items, ...lowRes.items];
-					const unique = Array.from(new Map(merged.map((p) => [p.id, p])).values()).slice(0, 5);
-					dashboardData = { ...dashboardData, lowStockParts: unique };
-				}
-			}
-		} catch (e) {
-			const apiError = e as ApiError;
-			error = apiError.detail || 'Failed to load dashboard data';
-			toast.error('Failed to load dashboard', {
-				description: error
-			});
-		} finally {
-			loading = false;
-		}
-	}
+	import { resolve } from '$app/paths';
+	import { auth } from '$lib/stores/auth.svelte.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 
 	onMount(() => {
-		loadDashboard();
+		auth.initialize();
+		if (!auth.isAuthenticated) {
+			goto(resolve('/login'), { replaceState: true });
+			return;
+		}
+
+		const role = auth.user?.role;
+		if (role === 'delivery') {
+			goto('/app/delivery', { replaceState: true });
+			return;
+		}
+		if (role === 'inventory') {
+			goto('/app/inventory', { replaceState: true });
+			return;
+		}
+		// admin stays on /app
 	});
 </script>
 
@@ -61,25 +30,35 @@
 	<title>Dashboard - ProjectRIMS</title>
 </svelte:head>
 
-<div class="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-	<SectionCards stats={dashboardData?.stats ?? null} {loading} />
+{#if auth.isAuthenticated && auth.user?.role === 'admin'}
+	<div class="flex flex-col gap-6 p-4 md:p-6">
+		<div class="flex items-center justify-between gap-4">
+			<div>
+				<h1 class="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
+				<p class="text-muted-foreground">Manage users and configuration.</p>
+			</div>
+			<Badge variant="secondary">Admin</Badge>
+		</div>
 
-	<!-- Movement Chart - Full Width -->
-	<div class="px-4 lg:px-6">
-		<MovementChart movements={dashboardData?.recentMovements ?? []} {loading} />
+		<div class="grid gap-4 md:grid-cols-2">
+			<div class="rounded-xl border bg-card p-4 md:p-6">
+				<div class="text-sm font-medium">Users</div>
+				<div class="mt-1 text-sm text-muted-foreground">Create and manage system users.</div>
+				<div class="mt-4">
+					<Button href="/app/users">Open Users</Button>
+				</div>
+			</div>
+			<div class="rounded-xl border bg-card p-4 md:p-6">
+				<div class="text-sm font-medium">Parts</div>
+				<div class="mt-1 text-sm text-muted-foreground">Manage parts master data.</div>
+				<div class="mt-4">
+					<Button href="/app/parts">Open Parts</Button>
+				</div>
+			</div>
+		</div>
 	</div>
-
-	<div class="grid grid-cols-1 gap-4 px-4 lg:grid-cols-2 lg:px-6">
-		<RecentActivity
-			receivings={dashboardData?.recentReceivings ?? []}
-			outgoings={dashboardData?.recentOutgoings ?? []}
-			{loading}
-		/>
-		<LowStockAlert
-			parts={dashboardData?.lowStockParts ?? []}
-			lowStockCount={dashboardData?.stats?.parts?.lowStock ?? 0}
-			outOfStockCount={dashboardData?.stats?.parts?.outOfStock ?? 0}
-			{loading}
-		/>
+{:else}
+	<div class="flex flex-col gap-4 p-4 md:p-6">
+		<div class="text-sm text-muted-foreground">Redirecting...</div>
 	</div>
-</div>
+{/if}

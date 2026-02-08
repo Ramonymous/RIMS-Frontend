@@ -28,10 +28,13 @@ export interface PaginationParams {
 // USER TYPES
 // ============================================================================
 
+export type UserRole = 'admin' | 'inventory' | 'delivery';
+
 export interface UserResponse {
 	id: string;
 	name: string;
 	email: string;
+	role?: UserRole;
 	permissions: string[];
 	email_verified_at: string | null;
 	created_at: string;
@@ -42,12 +45,14 @@ export interface UserCreate {
 	name: string;
 	email: string;
 	password: string;
+	role?: UserRole;
 	permissions?: string[];
 }
 
 export interface UserUpdate {
 	name?: string;
 	email?: string;
+	role?: UserRole;
 	permissions?: string[];
 }
 

@@ -3,33 +3,33 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { getReceiving } from '$lib/api/receivings.js';
+	import { getOutgoing } from '$lib/api/outgoings.js';
 	import { getParts } from '$lib/api/parts.js';
-	import type { PartResponse, ReceivingResponse } from '$lib/api/types.js';
+	import type { OutgoingResponse, PartResponse } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { auth } from '$lib/stores/auth.svelte.js';
 	import { toast } from 'svelte-sonner';
 
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-	import ReceivingForm from '../../receiving-form.svelte';
+	import OutgoingForm from '../../outgoing-form.svelte';
 
-	let receiving = $state<ReceivingResponse | null>(null);
+	let outgoing = $state<OutgoingResponse | null>(null);
 	let parts = $state<PartResponse[]>([]);
 	let loading = $state(true);
 
-	const canUpdate = $derived(auth.hasPermission('receivings.update'));
+	const canUpdate = $derived(auth.hasPermission('outgoings.update'));
 
 	onMount(async () => {
 		loading = true;
 		try {
-			const receivingId = $page.params.receivingId;
-			if (!receivingId) {
-				toast.error('Invalid route', { description: 'Missing receiving id.' });
+			const outgoingId = $page.params.outgoingId;
+			if (!outgoingId) {
+				toast.error('Invalid route', { description: 'Missing outgoing id.' });
 				return;
 			}
-			const [receivingRes, partsRes] = await Promise.all([getReceiving(receivingId), getParts()]);
-			receiving = receivingRes;
+			const [outgoingRes, partsRes] = await Promise.all([getOutgoing(outgoingId), getParts()]);
+			outgoing = outgoingRes;
 			parts = partsRes.items;
 		} catch (e) {
 			const error = e as ApiError;
@@ -41,41 +41,45 @@
 </script>
 
 <svelte:head>
-	<title>Edit Receiving - ProjectRIMS</title>
+	<title>Edit Outgoing - ProjectRIMS</title>
 </svelte:head>
 
 <div class="flex flex-col gap-4 p-4 md:p-6">
 	<div class="flex items-center justify-between gap-2">
 		<div>
-			<h1 class="text-2xl font-bold">Edit Receiving</h1>
-			<p class="text-muted-foreground">Update an incoming goods receipt</p>
+			<h1 class="text-2xl font-bold">Edit Outgoing</h1>
+			<p class="text-muted-foreground">Update an outgoing goods issue</p>
 		</div>
-		<Button variant="outline" onclick={() => goto(resolve('/app/receivings'))} disabled={loading}>
+		<Button
+			variant="outline"
+			onclick={() => goto(resolve('/app/inventory/outgoings'))}
+			disabled={loading}
+		>
 			Back
 		</Button>
 	</div>
 
 	{#if !canUpdate}
 		<div class="rounded-md border p-6">
-			<p class="text-sm text-muted-foreground">You don't have permission to update receivings.</p>
+			<p class="text-sm text-muted-foreground">You don't have permission to update outgoings.</p>
 		</div>
 	{:else if loading}
 		<div class="space-y-4">
 			<Skeleton class="h-10 w-72" />
 			<Skeleton class="h-64 w-full" />
 		</div>
-	{:else if !receiving}
+	{:else if !outgoing}
 		<div class="rounded-md border p-6">
-			<p class="text-sm text-muted-foreground">Receiving not found.</p>
+			<p class="text-sm text-muted-foreground">Outgoing not found.</p>
 		</div>
 	{:else}
 		<div class="w-full rounded-xl border bg-card p-4 md:p-6">
-			<ReceivingForm
-				{receiving}
+			<OutgoingForm
+				{outgoing}
 				{parts}
-				docNumber={receiving.doc_number}
-				onCancel={() => goto(resolve('/app/receivings'))}
-				onSuccess={() => goto(resolve('/app/receivings'))}
+				docNumber={outgoing.doc_number}
+				onCancel={() => goto(resolve('/app/inventory/outgoings'))}
+				onSuccess={() => goto(resolve('/app/inventory/outgoings'))}
 			/>
 		</div>
 	{/if}

@@ -11,7 +11,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { cn, type WithElementRef } from '$lib/utils.js';
 	import type { HTMLFormAttributes } from 'svelte/elements';
-	import { auth } from '$lib/stores/auth.svelte';
+	import { auth } from '$lib/stores/auth.svelte.js';
 	import { toast } from 'svelte-sonner';
 	import type { ApiError } from '$lib/api/index.js';
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
@@ -35,7 +35,7 @@
 			toast.success('Login successful', {
 				description: `Welcome back, ${auth.user?.name}!`
 			});
-			goto(resolve('/app'));
+			goto(resolve('/app'), { replaceState: true });
 		} catch (error) {
 			const apiError = error as ApiError;
 			toast.error('Login failed', {

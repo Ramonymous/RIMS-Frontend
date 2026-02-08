@@ -32,7 +32,7 @@ export async function getOutgoings(
 		cacheKeys.outgoings(params as Record<string, unknown> | undefined),
 		() =>
 			api.get<PaginatedResponse<OutgoingResponse>>(
-				'/outgoings',
+				'/v1/inventory/outgoings',
 				params as Record<string, string | number | boolean>
 			),
 		30_000
@@ -42,42 +42,42 @@ export async function getOutgoings(
 export async function getOutgoing(id: string): Promise<OutgoingResponse> {
 	return apiCache.getOrFetch(
 		`outgoing:${id}`,
-		() => api.get<OutgoingResponse>(`/outgoings/${id}`),
+		() => api.get<OutgoingResponse>(`/v1/inventory/outgoings/${id}`),
 		30_000
 	);
 }
 
 export async function createOutgoing(data: OutgoingCreate): Promise<OutgoingResponse> {
-	const result = await api.post<OutgoingResponse>('/outgoings', data);
+	const result = await api.post<OutgoingResponse>('/v1/inventory/outgoings', data);
 	invalidateOutgoingsCache();
 	return result;
 }
 
 export async function updateOutgoing(id: string, data: OutgoingUpdate): Promise<OutgoingResponse> {
-	const result = await api.put<OutgoingResponse>(`/outgoings/${id}`, data);
+	const result = await api.put<OutgoingResponse>(`/v1/inventory/outgoings/${id}`, data);
 	invalidateOutgoingsCache();
 	return result;
 }
 
 export async function deleteOutgoing(id: string): Promise<void> {
-	await api.delete<void>(`/outgoings/${id}`);
+	await api.delete<void>(`/v1/inventory/outgoings/${id}`);
 	invalidateOutgoingsCache();
 }
 
 export async function completeOutgoing(id: string): Promise<OutgoingResponse> {
-	const result = await api.put<OutgoingResponse>(`/outgoings/${id}/complete`);
+	const result = await api.put<OutgoingResponse>(`/v1/inventory/outgoings/${id}/complete`);
 	invalidateOutgoingsCache();
 	return result;
 }
 
 export async function cancelOutgoing(id: string): Promise<OutgoingResponse> {
-	const result = await api.put<OutgoingResponse>(`/outgoings/${id}/cancel`);
+	const result = await api.put<OutgoingResponse>(`/v1/inventory/outgoings/${id}/cancel`);
 	invalidateOutgoingsCache();
 	return result;
 }
 
 export async function confirmGI(id: string): Promise<OutgoingResponse> {
-	const result = await api.put<OutgoingResponse>(`/outgoings/${id}/confirm-gi`);
+	const result = await api.put<OutgoingResponse>(`/v1/inventory/outgoings/${id}/confirm-gi`);
 	invalidateOutgoingsCache();
 	return result;
 }

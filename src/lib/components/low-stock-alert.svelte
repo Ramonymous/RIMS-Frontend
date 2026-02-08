@@ -97,7 +97,7 @@
 						variant="ghost"
 						size="sm"
 						class="w-full justify-between"
-						href="/app/movements?tab=stock&stock_status=out_of_stock"
+						href="/app/inventory/movements?tab=stock&stock_status=out_of_stock"
 					>
 						View out of stock
 						<ArrowRightIcon class="size-4" />
@@ -108,7 +108,7 @@
 						variant="ghost"
 						size="sm"
 						class="w-full justify-between"
-						href="/app/movements?tab=stock&stock_status=low_stock"
+						href="/app/inventory/movements?tab=stock&stock_status=low_stock"
 					>
 						View low stock
 						<ArrowRightIcon class="size-4" />
@@ -119,7 +119,7 @@
 						variant="ghost"
 						size="sm"
 						class="w-full justify-between"
-						href="/app/movements?tab=stock"
+						href="/app/inventory/movements?tab=stock"
 					>
 						View stock & movements
 						<ArrowRightIcon class="size-4" />

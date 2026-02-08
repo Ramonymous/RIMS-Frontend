@@ -65,7 +65,11 @@
 			<h1 class="text-2xl font-bold">New Request</h1>
 			<p class="text-muted-foreground">Create a part request</p>
 		</div>
-		<Button variant="outline" onclick={() => goto(resolve('/app/requests'))} disabled={loading}>
+		<Button
+			variant="outline"
+			onclick={() => goto(resolve('/app/inventory/requests'))}
+			disabled={loading}
+		>
 			Back
 		</Button>
 	</div>
@@ -85,8 +89,8 @@
 				request={null}
 				{parts}
 				requestNumber={generateRequestNumber()}
-				onCancel={() => goto(resolve('/app/requests'))}
-				onSuccess={() => goto(resolve('/app/requests'))}
+				onCancel={() => goto(resolve('/app/inventory/requests'))}
+				onSuccess={() => goto(resolve('/app/inventory/requests'))}
 			/>
 		</div>
 	{/if}

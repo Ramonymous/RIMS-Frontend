@@ -21,7 +21,7 @@ export async function getMovements(
 		cacheKeys.movements(params as Record<string, unknown> | undefined),
 		() =>
 			api.get<PaginatedResponse<PartMovementResponse>>(
-				'/movements',
+				'/v1/inventory/movements',
 				params as Record<string, string | number | boolean>
 			),
 		15_000
@@ -37,7 +37,7 @@ export async function getMovementsByPart(
 		cacheKey,
 		() =>
 			api.get<PaginatedResponse<PartMovementResponse>>(
-				`/parts/${partId}/movements`,
+				`/v1/inventory/parts/${partId}/movements`,
 				params as Record<string, string | number | boolean>
 			),
 		15_000
