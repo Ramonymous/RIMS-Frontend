@@ -4,6 +4,8 @@
 	import type { ComponentProps } from 'svelte';
 	import type { Icon } from '@tabler/icons-svelte';
 
+	const sidebar = Sidebar.useSidebar();
+
 	let {
 		items,
 		...restProps
@@ -19,7 +21,13 @@
 				<Sidebar.MenuItem>
 					<Sidebar.MenuButton>
 						{#snippet child({ props })}
-							<a href={item.url} {...props}>
+							<a
+								href={item.url}
+								onclick={() => {
+									if (sidebar.isMobile) sidebar.setOpenMobile(false);
+								}}
+								{...props}
+							>
 								<item.icon />
 								<span>{item.title}</span>
 							</a>

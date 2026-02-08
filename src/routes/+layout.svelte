@@ -1,7 +1,7 @@
 <script lang="ts">
 	import './layout.css';
-	import { Toaster } from '$lib/components/ui/sonner/index.js';
-	import { auth } from '$lib/stores/auth.svelte';
+	import { Toaster } from 'svelte-sonner';
+	import { auth } from '$lib/stores/auth.svelte.js';
 	import { onMount } from 'svelte';
 
 	const { children } = $props();

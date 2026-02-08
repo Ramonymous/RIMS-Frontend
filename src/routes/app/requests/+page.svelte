@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { getRequests, deleteRequest, completeRequest, cancelRequest } from '$lib/api/requests.js';
-	import { getParts } from '$lib/api/parts.js';
-	import type { RequestResponse, PartResponse } from '$lib/api/types.js';
+	import type { RequestResponse } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { auth } from '$lib/stores/auth.svelte.js';
 	import { toast } from 'svelte-sonner';
@@ -17,7 +18,6 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import RequestFormDialog from './request-form-dialog.svelte';
 
 	// Icons
 	import PlusIcon from '@tabler/icons-svelte/icons/plus';
@@ -33,7 +33,6 @@
 
 	// State
 	let requests = $state<RequestResponse[]>([]);
-	let parts = $state<PartResponse[]>([]);
 	let loading = $state(true);
 	let searchQuery = $state('');
 	let statusFilter = $state<string>('all');
@@ -43,8 +42,6 @@
 	let endDate = $state(formatDateLocal(getLastOfMonth()));
 
 	// Dialog states
-	let formDialogOpen = $state(false);
-	let selectedRequest = $state<RequestResponse | null>(null);
 	let deleteDialogOpen = $state(false);
 	let requestToDelete = $state<RequestResponse | null>(null);
 	let actionLoading = $state(false);
@@ -74,35 +71,11 @@
 		})
 	);
 
-	// Generate request number: REQ-{ddmmyy}-0001
-	function generateRequestNumber(): string {
-		const now = new Date();
-		const dd = String(now.getDate()).padStart(2, '0');
-		const mm = String(now.getMonth() + 1).padStart(2, '0');
-		const yy = String(now.getFullYear()).slice(-2);
-		const datePrefix = `REQ-${dd}${mm}${yy}`;
-
-		// Find the highest number for today
-		const todayDocs = requests.filter((r) => r.request_number.startsWith(datePrefix));
-		let maxNum = 0;
-		todayDocs.forEach((r) => {
-			const reqParts = r.request_number.split('-');
-			if (reqParts.length === 3) {
-				const num = parseInt(reqParts[2], 10);
-				if (num > maxNum) maxNum = num;
-			}
-		});
-
-		const nextNum = String(maxNum + 1).padStart(4, '0');
-		return `${datePrefix}-${nextNum}`;
-	}
-
 	async function loadData() {
 		loading = true;
 		try {
-			const [requestsRes, partsRes] = await Promise.all([getRequests(), getParts()]);
+			const requestsRes = await getRequests();
 			requests = requestsRes.items;
-			parts = partsRes.items;
 		} catch (e) {
 			const error = e as ApiError;
 			toast.error('Failed to load data', { description: error.detail });
@@ -112,13 +85,11 @@
 	}
 
 	function openCreateDialog() {
-		selectedRequest = null;
-		formDialogOpen = true;
+		goto(resolve('/app/requests/new'));
 	}
 
 	function openEditDialog(request: RequestResponse) {
-		selectedRequest = request;
-		formDialogOpen = true;
+		goto(resolve(`/app/requests/${request.id}/edit`));
 	}
 
 	function openDeleteDialog(request: RequestResponse) {
@@ -178,11 +149,6 @@
 		}
 	}
 
-	function handleFormSuccess() {
-		formDialogOpen = false;
-		loadData();
-	}
-
 	function getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
 		switch (status) {
 			case 'completed':
@@ -225,12 +191,12 @@
 
 <div class="flex flex-col gap-4 p-4 md:p-6">
 	<!-- Header -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<div>
-			<h1 class="text-2xl font-bold">Requests</h1>
-			<p class="text-muted-foreground">Manage part requests</p>
+	<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+		<div class="space-y-1">
+			<h1 class="text-3xl font-semibold tracking-tight">Requests</h1>
+			<p class="text-sm text-muted-foreground">Manage part requests</p>
 		</div>
-		<div class="flex gap-2">
+		<div class="hidden gap-2 sm:flex">
 			{#if canCreate}
 				<Button onclick={openCreateDialog}>
 					<PlusIcon class="size-4" />
@@ -241,40 +207,153 @@
 	</div>
 
 	<!-- Filters -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-		<div class="relative flex-1">
-			<SearchIcon class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-			<Input
-				placeholder="Search by request number or destination..."
-				bind:value={searchQuery}
-				class="pl-10"
-			/>
+	<div class="rounded-xl border bg-card p-3 sm:p-4">
+		<div class="grid gap-3 sm:flex sm:flex-row sm:items-center">
+			<div class="relative flex-1">
+				<SearchIcon class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+				<Input
+					placeholder="Search by request number or destination..."
+					bind:value={searchQuery}
+					class="pl-10"
+				/>
+			</div>
+			<div class="grid gap-2 sm:flex sm:items-center sm:gap-2">
+				<div class="space-y-1">
+					<div class="text-xs font-medium text-muted-foreground sm:sr-only">Start</div>
+					<Input type="date" bind:value={startDate} class="w-full sm:w-36" />
+				</div>
+				<div class="space-y-1">
+					<div class="text-xs font-medium text-muted-foreground sm:sr-only">End</div>
+					<Input type="date" bind:value={endDate} class="w-full sm:w-36" />
+				</div>
+			</div>
+			<Select.Root type="single" bind:value={statusFilter}>
+				<Select.Trigger class="w-full sm:w-40">
+					{statusFilter === 'all'
+						? 'All Status'
+						: statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+				</Select.Trigger>
+				<Select.Content>
+					<Select.Item value="all">All Status</Select.Item>
+					<Select.Item value="draft">Draft</Select.Item>
+					<Select.Item value="completed">Completed</Select.Item>
+					<Select.Item value="cancelled">Cancelled</Select.Item>
+				</Select.Content>
+			</Select.Root>
+			<Button
+				variant="outline"
+				size="icon"
+				onclick={loadData}
+				disabled={loading}
+				class="justify-self-start sm:justify-self-auto"
+			>
+				<RefreshIcon class="size-4 {loading ? 'animate-spin' : ''}" />
+			</Button>
 		</div>
-		<div class="flex items-center gap-2">
-			<Input type="date" bind:value={startDate} class="w-36" />
-			<span class="text-muted-foreground">to</span>
-			<Input type="date" bind:value={endDate} class="w-36" />
-		</div>
-		<Select.Root type="single" bind:value={statusFilter}>
-			<Select.Trigger class="w-full sm:w-40">
-				{statusFilter === 'all'
-					? 'All Status'
-					: statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-			</Select.Trigger>
-			<Select.Content>
-				<Select.Item value="all">All Status</Select.Item>
-				<Select.Item value="draft">Draft</Select.Item>
-				<Select.Item value="completed">Completed</Select.Item>
-				<Select.Item value="cancelled">Cancelled</Select.Item>
-			</Select.Content>
-		</Select.Root>
-		<Button variant="outline" size="icon" onclick={loadData} disabled={loading}>
-			<RefreshIcon class="size-4 {loading ? 'animate-spin' : ''}" />
-		</Button>
 	</div>
 
-	<!-- Table -->
-	<div class="rounded-md border">
+	<!-- Mobile Cards -->
+	<div class="grid gap-3 md:hidden">
+		{#if loading}
+			{#each Array(6) as _, i (i)}
+				<div class="rounded-xl border bg-card p-4">
+					<div class="space-y-3">
+						<Skeleton class="h-5 w-40" />
+						<Skeleton class="h-4 w-28" />
+						<Skeleton class="h-4 w-24" />
+					</div>
+				</div>
+			{/each}
+		{:else if filteredRequests.length === 0}
+			<div class="rounded-xl border bg-card p-6 text-center">
+				<p class="text-sm text-muted-foreground">No requests found</p>
+				{#if canCreate}
+					<div class="mt-3">
+						<Button variant="outline" size="sm" onclick={openCreateDialog}>
+							<PlusIcon class="size-4" />
+							Create your first request
+						</Button>
+					</div>
+				{/if}
+			</div>
+		{:else}
+			{#each filteredRequests as request (request.id)}
+				<div class="rounded-xl border bg-card p-4">
+					<div class="flex items-start justify-between gap-3">
+						<div class="min-w-0">
+							<div class="truncate font-mono text-base font-semibold">{request.request_number}</div>
+							<div class="mt-1 text-sm text-muted-foreground">
+								{request.destination ?? '-'}
+							</div>
+						</div>
+						<Badge variant={getStatusVariant(request.status)}>
+							{request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+						</Badge>
+					</div>
+
+					<div class="mt-3 flex items-center justify-between text-sm">
+						<div class="text-muted-foreground">
+							Items
+							<span class="ml-1 font-medium text-foreground">{getTotalItems(request)}</span>
+						</div>
+						<div class="text-muted-foreground">
+							Supplied
+							<span class="ml-1 font-medium text-foreground">
+								{getSuppliedCount(request)} / {request.items?.length ?? 0}
+							</span>
+						</div>
+					</div>
+
+					<div class="mt-3 text-sm text-muted-foreground">
+						{formatDate(request.requested_at)}
+					</div>
+
+					<div class="mt-4 flex items-center justify-end gap-2">
+						{#if canUpdate && isEditable(request)}
+							<Button variant="outline" size="sm" onclick={() => openEditDialog(request)}>
+								<PencilIcon class="size-4" />
+								Edit
+							</Button>
+						{/if}
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger>
+								{#snippet child({ props })}
+									<Button variant="ghost" size="icon" {...props}>
+										<DotsVerticalIcon class="size-4" />
+									</Button>
+								{/snippet}
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content align="end">
+								{#if canComplete && request.status === 'draft'}
+									<DropdownMenu.Item onclick={() => handleComplete(request)}>
+										<CheckIcon class="size-4" />
+										Complete
+									</DropdownMenu.Item>
+									<DropdownMenu.Item onclick={() => handleCancel(request)}>
+										<XIcon class="size-4" />
+										Cancel
+									</DropdownMenu.Item>
+								{/if}
+								{#if canDelete && request.status === 'draft'}
+									<DropdownMenu.Separator />
+									<DropdownMenu.Item
+										class="text-destructive"
+										onclick={() => openDeleteDialog(request)}
+									>
+										<TrashIcon class="size-4" />
+										Delete
+									</DropdownMenu.Item>
+								{/if}
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
+					</div>
+				</div>
+			{/each}
+		{/if}
+	</div>
+
+	<!-- Desktop Table -->
+	<div class="hidden rounded-xl border bg-card md:block">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
@@ -397,14 +476,18 @@
 	{/if}
 </div>
 
-<!-- Request Form Dialog -->
-<RequestFormDialog
-	bind:open={formDialogOpen}
-	request={selectedRequest}
-	{parts}
-	requestNumber={selectedRequest ? selectedRequest.request_number : generateRequestNumber()}
-	onSuccess={handleFormSuccess}
-/>
+{#if canCreate}
+	<div class="fixed right-4 bottom-4 z-50 md:hidden">
+		<Button
+			class="size-14 rounded-full p-0 shadow-lg"
+			onclick={openCreateDialog}
+			aria-label="New Request"
+		>
+			<PlusIcon class="size-6" />
+			<span class="sr-only">New Request</span>
+		</Button>
+	</div>
+{/if}
 
 <!-- Delete Confirmation Dialog -->
 <AlertDialog.Root bind:open={deleteDialogOpen}>

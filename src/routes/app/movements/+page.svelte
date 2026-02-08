@@ -12,6 +12,7 @@
 	import type { ApiError } from '$lib/api/index.js';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 	import type * as XLSXNS from 'xlsx';
 	import {
 		formatDateLocal,
@@ -78,6 +79,7 @@
 	}
 
 	// Stock tab state
+	let activeTab = $state<'stock' | 'movements'>('stock');
 	let stockSearchQuery = $state('');
 	let stockStatusFilter = $state<string>('all');
 
@@ -284,6 +286,18 @@
 	}
 
 	onMount(() => {
+		const tabParam = $page.url.searchParams.get('tab');
+		activeTab = tabParam === 'movements' ? 'movements' : 'stock';
+		const stockStatusParam = $page.url.searchParams.get('stock_status');
+		if (
+			stockStatusParam &&
+			['all', 'in_stock', 'low_stock', 'out_of_stock', 'active', 'inactive'].includes(
+				stockStatusParam
+			)
+		) {
+			stockStatusFilter = stockStatusParam;
+		}
+
 		loadInitialData().then(() => {
 			if (parts.length > 0) {
 				loadAllMovements();
@@ -315,7 +329,7 @@
 		</Button>
 	</div>
 
-	<Tabs.Root value="stock" class="w-full">
+	<Tabs.Root bind:value={activeTab} class="w-full">
 		<Tabs.List class="grid w-full max-w-md grid-cols-2">
 			<Tabs.Trigger value="stock">
 				<PackageIcon class="mr-2 size-4" />
@@ -330,42 +344,45 @@
 		<!-- Stock Tab -->
 		<Tabs.Content value="stock" class="mt-4 space-y-4">
 			<!-- Filters -->
-			<div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-				<div class="relative flex-1">
-					<SearchIcon
-						class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-					/>
-					<Input
-						placeholder="Search by part number, name, customer code..."
-						bind:value={stockSearchQuery}
-						class="pl-10"
-					/>
+			<div class="rounded-xl border bg-card p-4">
+				<div class="grid gap-3 sm:flex sm:flex-row sm:items-center">
+					<div class="relative flex-1">
+						<SearchIcon
+							class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+						/>
+						<Input
+							placeholder="Search by part number, name, customer code..."
+							bind:value={stockSearchQuery}
+							class="pl-10"
+						/>
+					</div>
+					<Select.Root type="single" bind:value={stockStatusFilter}>
+						<Select.Trigger class="w-full sm:w-44">
+							{stockStatusFilter === 'all' ? 'All Status' : formatStockStatus(stockStatusFilter)}
+						</Select.Trigger>
+						<Select.Content>
+							<Select.Item value="all">All Status</Select.Item>
+							<Select.Item value="in_stock">In Stock</Select.Item>
+							<Select.Item value="low_stock">Low Stock</Select.Item>
+							<Select.Item value="out_of_stock">Out of Stock</Select.Item>
+							<Select.Item value="active">Active</Select.Item>
+							<Select.Item value="inactive">Inactive</Select.Item>
+						</Select.Content>
+					</Select.Root>
+					<Button
+						variant="outline"
+						onclick={downloadStockReport}
+						disabled={loading || filteredParts.length === 0}
+						class="justify-self-start sm:justify-self-auto"
+					>
+						<DownloadIcon class="size-4" />
+						Export Excel
+					</Button>
 				</div>
-				<Select.Root type="single" bind:value={stockStatusFilter}>
-					<Select.Trigger class="w-full sm:w-44">
-						{stockStatusFilter === 'all' ? 'All Status' : formatStockStatus(stockStatusFilter)}
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item value="all">All Status</Select.Item>
-						<Select.Item value="in_stock">In Stock</Select.Item>
-						<Select.Item value="low_stock">Low Stock</Select.Item>
-						<Select.Item value="out_of_stock">Out of Stock</Select.Item>
-						<Select.Item value="active">Active</Select.Item>
-						<Select.Item value="inactive">Inactive</Select.Item>
-					</Select.Content>
-				</Select.Root>
-				<Button
-					variant="outline"
-					onclick={downloadStockReport}
-					disabled={loading || filteredParts.length === 0}
-				>
-					<DownloadIcon class="size-4" />
-					Export Excel
-				</Button>
 			</div>
 
 			<!-- Stock Table -->
-			<div class="rounded-md border">
+			<div class="hidden rounded-md border bg-card md:block">
 				<Table.Root>
 					<Table.Header>
 						<Table.Row>
@@ -421,6 +438,52 @@
 				</Table.Root>
 			</div>
 
+			<!-- Stock Cards (Mobile) -->
+			<div class="space-y-2 md:hidden">
+				{#if loading}
+					{#each Array(8) as _, i (i)}
+						<div class="rounded-xl border bg-card p-4">
+							<Skeleton class="h-4 w-40" />
+							<div class="mt-2"><Skeleton class="h-4 w-56" /></div>
+							<div class="mt-3 grid grid-cols-2 gap-2">
+								<Skeleton class="h-6 w-full" />
+								<Skeleton class="h-6 w-full" />
+							</div>
+						</div>
+					{/each}
+				{:else if filteredParts.length === 0}
+					<div class="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">
+						No parts found
+					</div>
+				{:else}
+					{#each filteredParts as part (part.id)}
+						<div class="rounded-xl border bg-card p-4 {!part.is_active ? 'opacity-60' : ''}">
+							<div class="flex items-start justify-between gap-3">
+								<div class="min-w-0">
+									<div class="truncate font-mono text-sm font-semibold">{part.part_number}</div>
+									<div class="truncate text-sm text-muted-foreground">{part.part_name ?? '-'}</div>
+								</div>
+								<div class="text-right">
+									<div class="font-mono text-xl font-bold">{part.stock}</div>
+									<div class="text-xs text-muted-foreground">Stock</div>
+								</div>
+							</div>
+							<div class="mt-3 flex flex-wrap items-center gap-2">
+								<Badge variant={getStockStatusVariant(part.stock_status)}>
+									{formatStockStatus(part.stock_status)}
+								</Badge>
+								{#if part.address}
+									<Badge variant="outline">{part.address}</Badge>
+								{/if}
+								{#if part.customer_code}
+									<Badge variant="secondary">{part.customer_code}</Badge>
+								{/if}
+							</div>
+						</div>
+					{/each}
+				{/if}
+			</div>
+
 			<!-- Stats -->
 			{#if !loading}
 				<div class="text-sm text-muted-foreground">
@@ -432,45 +495,53 @@
 		<!-- Movements Tab -->
 		<Tabs.Content value="movements" class="mt-4 space-y-4">
 			<!-- Filters -->
-			<div class="flex flex-col flex-wrap gap-4 sm:flex-row sm:items-center">
-				<div class="flex items-center gap-2">
-					<Input type="date" bind:value={startDate} class="w-36" />
-					<span class="text-muted-foreground">to</span>
-					<Input type="date" bind:value={endDate} class="w-36" />
-				</div>
-				<PartSelect
-					{parts}
-					bind:value={selectedPartId}
-					placeholder="All Parts"
-					class="w-full sm:w-64"
-				/>
-				{#if selectedPartId}
-					<Button variant="ghost" size="sm" onclick={() => (selectedPartId = undefined)}>
-						Clear
+			<div class="rounded-xl border bg-card p-4">
+				<div class="grid gap-3 sm:flex sm:flex-row sm:flex-wrap sm:items-center">
+					<div class="grid gap-2 sm:flex sm:items-center sm:gap-2">
+						<div class="space-y-1">
+							<div class="text-xs font-medium text-muted-foreground sm:sr-only">Start</div>
+							<Input type="date" bind:value={startDate} class="w-full sm:w-36" />
+						</div>
+						<div class="space-y-1">
+							<div class="text-xs font-medium text-muted-foreground sm:sr-only">End</div>
+							<Input type="date" bind:value={endDate} class="w-full sm:w-36" />
+						</div>
+					</div>
+					<PartSelect
+						{parts}
+						bind:value={selectedPartId}
+						placeholder="All Parts"
+						class="w-full sm:w-64"
+					/>
+					{#if selectedPartId}
+						<Button variant="ghost" size="sm" onclick={() => (selectedPartId = undefined)}>
+							Clear
+						</Button>
+					{/if}
+					<Select.Root type="single" bind:value={typeFilter}>
+						<Select.Trigger class="w-full sm:w-36">
+							{typeFilter === 'all' ? 'All Types' : typeFilter === 'in' ? 'Incoming' : 'Outgoing'}
+						</Select.Trigger>
+						<Select.Content>
+							<Select.Item value="all">All Types</Select.Item>
+							<Select.Item value="in">Incoming</Select.Item>
+							<Select.Item value="out">Outgoing</Select.Item>
+						</Select.Content>
+					</Select.Root>
+					<Button
+						variant="outline"
+						onclick={downloadMovementsReport}
+						disabled={loadingMovements || filteredMovements.length === 0}
+						class="justify-self-start sm:justify-self-auto"
+					>
+						<DownloadIcon class="size-4" />
+						Export Excel
 					</Button>
-				{/if}
-				<Select.Root type="single" bind:value={typeFilter}>
-					<Select.Trigger class="w-full sm:w-36">
-						{typeFilter === 'all' ? 'All Types' : typeFilter === 'in' ? 'Incoming' : 'Outgoing'}
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item value="all">All Types</Select.Item>
-						<Select.Item value="in">Incoming</Select.Item>
-						<Select.Item value="out">Outgoing</Select.Item>
-					</Select.Content>
-				</Select.Root>
-				<Button
-					variant="outline"
-					onclick={downloadMovementsReport}
-					disabled={loadingMovements || filteredMovements.length === 0}
-				>
-					<DownloadIcon class="size-4" />
-					Export Excel
-				</Button>
+				</div>
 			</div>
 
 			<!-- Stats Cards -->
-			<div class="grid grid-cols-3 gap-4">
+			<div class="grid grid-cols-3 gap-3 sm:gap-4">
 				<div class="rounded-lg border p-4 text-center">
 					<div class="text-2xl font-bold text-green-600">+{totalIn}</div>
 					<div class="text-sm text-muted-foreground">Total In</div>
@@ -486,7 +557,7 @@
 			</div>
 
 			<!-- Movements Table -->
-			<div class="rounded-md border">
+			<div class="hidden rounded-md border bg-card md:block">
 				<Table.Root>
 					<Table.Header>
 						<Table.Row>
@@ -573,6 +644,80 @@
 						{/if}
 					</Table.Body>
 				</Table.Root>
+			</div>
+
+			<!-- Movements Cards (Mobile) -->
+			<div class="space-y-2 md:hidden">
+				{#if loadingMovements}
+					{#each Array(8) as _, i (i)}
+						<div class="rounded-xl border bg-card p-4">
+							<div class="flex items-center justify-between">
+								<Skeleton class="h-6 w-20" />
+								<Skeleton class="h-4 w-24" />
+							</div>
+							<div class="mt-2"><Skeleton class="h-4 w-56" /></div>
+							<div class="mt-3 grid grid-cols-3 gap-2">
+								<Skeleton class="h-6 w-full" />
+								<Skeleton class="h-6 w-full" />
+								<Skeleton class="h-6 w-full" />
+							</div>
+						</div>
+					{/each}
+				{:else if filteredMovements.length === 0}
+					<div class="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">
+						No movements found
+					</div>
+				{:else}
+					{#each filteredMovements as movement (movement.id)}
+						{@const part = getPartInfo(movement.part_id)}
+						<div class="rounded-xl border bg-card p-4">
+							<div class="flex items-start justify-between gap-3">
+								<div class="min-w-0">
+									<div class="flex items-center gap-2">
+										{#if movement.type === 'in'}
+											<Badge variant="default">IN</Badge>
+										{:else}
+											<Badge variant="secondary">OUT</Badge>
+										{/if}
+										<span class="text-xs text-muted-foreground"
+											>{formatDateTime(movement.created_at)}</span
+										>
+									</div>
+									<div class="mt-2 truncate font-mono text-sm font-semibold">
+										{part?.part_number ?? '-'}
+									</div>
+									<div class="truncate text-sm text-muted-foreground">{part?.part_name ?? '-'}</div>
+								</div>
+								<div class="text-right">
+									<div class="text-xs text-muted-foreground">Qty</div>
+									<div
+										class="font-mono text-xl font-bold {movement.type === 'in'
+											? 'text-green-600'
+											: 'text-red-600'}"
+									>
+										{movement.type === 'in' ? '+' : '-'}{movement.qty}
+									</div>
+								</div>
+							</div>
+							<div class="mt-3 flex items-center gap-2">
+								<Badge variant={movement.reference_type === 'Receivings' ? 'default' : 'secondary'}>
+									{movement.reference_type === 'Receivings' ? 'RCV' : 'OUT'}
+								</Badge>
+								<span class="font-mono text-sm">{getDocNumber(movement)}</span>
+							</div>
+							<div class="mt-3 grid grid-cols-2 gap-2 text-center">
+								<div class="rounded-lg border bg-muted/30 p-2">
+									<div class="text-xs text-muted-foreground">Before</div>
+									<div class="font-mono text-sm font-semibold">{movement.stock_before}</div>
+								</div>
+								<div class="rounded-lg border bg-muted/30 p-2">
+									<div class="text-xs text-muted-foreground">After</div>
+									<div class="font-mono text-sm font-semibold">{movement.stock_after}</div>
+								</div>
+							</div>
+						</div>
+					{/each}
+				{/if}
 			</div>
 
 			<!-- Stats -->

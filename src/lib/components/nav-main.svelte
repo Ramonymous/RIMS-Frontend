@@ -1,52 +1,101 @@
 <script lang="ts">
+	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import type { Icon } from '@tabler/icons-svelte';
-	import { auth } from '$lib/stores/auth.svelte.js';
+	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
+	import { page } from '$app/state';
 
 	let {
-		items
-	}: { items: { title: string; url: string; icon?: Icon; requiredPermission?: string }[] } =
-		$props();
+		items,
+		label = 'Platform'
+	}: {
+		items: {
+			title: string;
+			url: string;
+			// this should be `Component` after @lucide/svelte updates types
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			icon?: any;
+			isActive?: boolean;
+			items?: {
+				title: string;
+				url: string;
+			}[];
+		}[];
+		label?: string;
+	} = $props();
 
-	// Filter items based on user permissions
-	const filteredItems = $derived(
-		items.filter((item) => {
-			if (!item.requiredPermission) return true;
-			// Check if user has any permission starting with the required prefix
-			return (
-				auth.user?.permissions.some((p) => p.startsWith(`${item.requiredPermission}.`)) ?? false
-			);
-		})
-	);
+	const sidebar = Sidebar.useSidebar();
+	let openByTitle = $state<Record<string, boolean>>({});
+
+	function isActiveUrl(url: string): boolean {
+		if (!url || url === '#') return false;
+		return page.url.pathname === url || page.url.pathname.startsWith(`${url}/`);
+	}
+
+	function closeOnMobile() {
+		if (sidebar.isMobile) sidebar.setOpenMobile(false);
+	}
+
+	$effect(() => {
+		for (const item of items) {
+			const hasChildren = (item.items?.length ?? 0) > 0;
+			if (!hasChildren) continue;
+
+			const isChildActive = item.items?.some((s) => isActiveUrl(s.url)) ?? false;
+			if (isChildActive && openByTitle[item.title] === false) {
+				openByTitle[item.title] = true;
+			}
+		}
+	});
 </script>
 
 <Sidebar.Group>
-	<Sidebar.GroupContent class="flex flex-col gap-2">
-		<!-- <Sidebar.Menu>
-			<Sidebar.MenuItem class="flex items-center gap-2">
-				<Sidebar.MenuButton
-					class="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
-					tooltipContent="Quick create"
+	<Sidebar.GroupLabel>{label}</Sidebar.GroupLabel>
+	<Sidebar.Menu>
+		{#each items as item (item.title)}
+			{#if (item.items?.length ?? 0) > 0}
+				<Collapsible.Root
+					open={openByTitle[item.title] ?? true}
+					onOpenChange={(v) => (openByTitle[item.title] = v)}
+					class="group/collapsible"
 				>
-					<CirclePlusFilledIcon />
-					<span>Quick Create</span>
-				</Sidebar.MenuButton>
-				<Button
-					size="icon"
-					class="size-8 group-data-[collapsible=icon]:opacity-0"
-					variant="outline"
-				>
-					<MailIcon />
-					<span class="sr-only">Inbox</span>
-				</Button>
-			</Sidebar.MenuItem>
-		</Sidebar.Menu> -->
-		<Sidebar.Menu>
-			{#each filteredItems as item (item.title)}
+					{#snippet child({ props })}
+						<Sidebar.MenuItem {...props}>
+							<Collapsible.Trigger>
+								{#snippet child({ props })}
+									<Sidebar.MenuButton {...props} tooltipContent={item.title}>
+										{#if item.icon}
+											<item.icon />
+										{/if}
+										<span>{item.title}</span>
+										<ChevronRightIcon
+											class="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+										/>
+									</Sidebar.MenuButton>
+								{/snippet}
+							</Collapsible.Trigger>
+							<Collapsible.Content>
+								<Sidebar.MenuSub>
+									{#each item.items ?? [] as subItem (subItem.title)}
+										<Sidebar.MenuSubItem>
+											<Sidebar.MenuSubButton isActive={isActiveUrl(subItem.url)}>
+												{#snippet child({ props })}
+													<a href={subItem.url} onclick={closeOnMobile} {...props}>
+														<span>{subItem.title}</span>
+													</a>
+												{/snippet}
+											</Sidebar.MenuSubButton>
+										</Sidebar.MenuSubItem>
+									{/each}
+								</Sidebar.MenuSub>
+							</Collapsible.Content>
+						</Sidebar.MenuItem>
+					{/snippet}
+				</Collapsible.Root>
+			{:else}
 				<Sidebar.MenuItem>
-					<Sidebar.MenuButton tooltipContent={item.title}>
+					<Sidebar.MenuButton tooltipContent={item.title} isActive={isActiveUrl(item.url)}>
 						{#snippet child({ props })}
-							<a href={item.url} {...props}>
+							<a href={item.url} onclick={closeOnMobile} {...props}>
 								{#if item.icon}
 									<item.icon />
 								{/if}
@@ -55,7 +104,7 @@
 						{/snippet}
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
-			{/each}
-		</Sidebar.Menu>
-	</Sidebar.GroupContent>
+			{/if}
+		{/each}
+	</Sidebar.Menu>
 </Sidebar.Group>

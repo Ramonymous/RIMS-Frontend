@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import type {
 		Html5Qrcode as Html5QrcodeType,
 		Html5QrcodeScannerState as ScannerStateType
@@ -31,6 +31,7 @@
 	let error = $state<string | null>(null);
 	let pauseCountdown = $state(0);
 	let countdownInterval: ReturnType<typeof setInterval> | null = null;
+	let viewportEl: HTMLDivElement | null = null;
 
 	const scannerId = `qr-scanner-${Math.random().toString(36).substring(7)}`;
 
@@ -65,6 +66,8 @@
 			);
 
 			isScanning = true;
+			await tick();
+			viewportEl?.scrollIntoView({ block: 'nearest' });
 		} catch (err) {
 			console.error('Failed to start scanner:', err);
 			error = 'Gagal mengakses kamera. Pastikan izin kamera sudah diberikan.';
@@ -146,9 +149,11 @@
 	<!-- Scanner viewport -->
 	<div
 		id={scannerId}
-		class="relative overflow-hidden rounded-lg bg-muted {isScanning
-			? 'min-h-[280px]'
-			: 'min-h-[100px]'}"
+		bind:this={viewportEl}
+		class="qr-scanner-viewport relative overflow-hidden rounded-lg bg-muted {isScanning ||
+		isInitializing
+			? 'h-[320px]'
+			: 'h-[120px]'}"
 	>
 		{#if !isScanning && !isInitializing}
 			<div class="flex h-full min-h-[100px] flex-col items-center justify-center gap-2 p-4">
@@ -197,3 +202,18 @@
 		{/if}
 	</Button>
 </div>
+
+<style>
+	:global(.qr-scanner-viewport video),
+	:global(.qr-scanner-viewport canvas),
+	:global(.qr-scanner-viewport img) {
+		max-width: 100%;
+		max-height: 100%;
+	}
+
+	:global(.qr-scanner-viewport video) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+</style>

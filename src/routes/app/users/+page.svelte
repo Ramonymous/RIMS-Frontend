@@ -123,7 +123,7 @@
 	</div>
 
 	<!-- Users Table -->
-	<div class="rounded-md border">
+	<div class="rounded-md border bg-card">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>

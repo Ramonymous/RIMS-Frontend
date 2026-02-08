@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import {
 		getOutgoings,
 		deleteOutgoing,
@@ -6,8 +8,7 @@
 		cancelOutgoing,
 		confirmGI
 	} from '$lib/api/outgoings.js';
-	import { getParts } from '$lib/api/parts.js';
-	import type { OutgoingResponse, PartResponse } from '$lib/api/types.js';
+	import type { OutgoingResponse } from '$lib/api/types.js';
 	import type { ApiError } from '$lib/api/index.js';
 	import { auth } from '$lib/stores/auth.svelte.js';
 	import { toast } from 'svelte-sonner';
@@ -23,7 +24,6 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import OutgoingFormDialog from './outgoing-form-dialog.svelte';
 
 	// Icons
 	import PlusIcon from '@tabler/icons-svelte/icons/plus';
@@ -39,7 +39,6 @@
 
 	// State
 	let outgoings = $state<OutgoingResponse[]>([]);
-	let parts = $state<PartResponse[]>([]);
 	let loading = $state(true);
 	let searchQuery = $state('');
 	let statusFilter = $state<string>('all');
@@ -49,8 +48,6 @@
 	let endDate = $state(formatDateLocal(getLastOfMonth()));
 
 	// Dialog states
-	let formDialogOpen = $state(false);
-	let selectedOutgoing = $state<OutgoingResponse | null>(null);
 	let deleteDialogOpen = $state(false);
 	let outgoingToDelete = $state<OutgoingResponse | null>(null);
 	let actionLoading = $state(false);
@@ -79,35 +76,11 @@
 		})
 	);
 
-	// Generate doc number: OUT-{ddmmyy}-0001
-	function generateDocNumber(): string {
-		const now = new Date();
-		const dd = String(now.getDate()).padStart(2, '0');
-		const mm = String(now.getMonth() + 1).padStart(2, '0');
-		const yy = String(now.getFullYear()).slice(-2);
-		const datePrefix = `OUT-${dd}${mm}${yy}`;
-
-		// Find the highest number for today
-		const todayDocs = outgoings.filter((o) => o.doc_number.startsWith(datePrefix));
-		let maxNum = 0;
-		todayDocs.forEach((o) => {
-			const parts = o.doc_number.split('-');
-			if (parts.length === 3) {
-				const num = parseInt(parts[2], 10);
-				if (num > maxNum) maxNum = num;
-			}
-		});
-
-		const nextNum = String(maxNum + 1).padStart(4, '0');
-		return `${datePrefix}-${nextNum}`;
-	}
-
 	async function loadData() {
 		loading = true;
 		try {
-			const [outgoingsRes, partsRes] = await Promise.all([getOutgoings(), getParts()]);
+			const outgoingsRes = await getOutgoings();
 			outgoings = outgoingsRes.items;
-			parts = partsRes.items;
 		} catch (e) {
 			const error = e as ApiError;
 			toast.error('Failed to load data', { description: error.detail });
@@ -117,13 +90,11 @@
 	}
 
 	function openCreateDialog() {
-		selectedOutgoing = null;
-		formDialogOpen = true;
+		goto(resolve('/app/outgoings/new'));
 	}
 
 	function openEditDialog(outgoing: OutgoingResponse) {
-		selectedOutgoing = outgoing;
-		formDialogOpen = true;
+		goto(resolve(`/app/outgoings/${outgoing.id}/edit`));
 	}
 
 	function openDeleteDialog(outgoing: OutgoingResponse) {
@@ -199,11 +170,6 @@
 		}
 	}
 
-	function handleFormSuccess() {
-		formDialogOpen = false;
-		loadData();
-	}
-
 	function getStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
 		switch (status) {
 			case 'completed':
@@ -234,12 +200,12 @@
 
 <div class="flex flex-col gap-4 p-4 md:p-6">
 	<!-- Header -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-		<div>
-			<h1 class="text-2xl font-bold">Outgoings</h1>
-			<p class="text-muted-foreground">Manage outgoing goods issues</p>
+	<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+		<div class="space-y-1">
+			<h1 class="text-3xl font-semibold tracking-tight">Outgoings</h1>
+			<p class="text-sm text-muted-foreground">Manage outgoing goods issues</p>
 		</div>
-		<div class="flex gap-2">
+		<div class="hidden gap-2 sm:flex">
 			{#if canCreate}
 				<Button onclick={openCreateDialog}>
 					<PlusIcon class="size-4" />
@@ -250,36 +216,149 @@
 	</div>
 
 	<!-- Filters -->
-	<div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-		<div class="relative flex-1">
-			<SearchIcon class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-			<Input placeholder="Search by document number..." bind:value={searchQuery} class="pl-10" />
+	<div class="rounded-xl border bg-card p-3 sm:p-4">
+		<div class="grid gap-3 sm:flex sm:flex-row sm:items-center">
+			<div class="relative flex-1">
+				<SearchIcon class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+				<Input placeholder="Search by document number..." bind:value={searchQuery} class="pl-10" />
+			</div>
+			<div class="grid gap-2 sm:flex sm:items-center sm:gap-2">
+				<div class="space-y-1">
+					<div class="text-xs font-medium text-muted-foreground sm:sr-only">Start</div>
+					<Input type="date" bind:value={startDate} class="w-full sm:w-36" />
+				</div>
+				<div class="space-y-1">
+					<div class="text-xs font-medium text-muted-foreground sm:sr-only">End</div>
+					<Input type="date" bind:value={endDate} class="w-full sm:w-36" />
+				</div>
+			</div>
+			<Select.Root type="single" bind:value={statusFilter}>
+				<Select.Trigger class="w-full sm:w-40">
+					{statusFilter === 'all'
+						? 'All Status'
+						: statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+				</Select.Trigger>
+				<Select.Content>
+					<Select.Item value="all">All Status</Select.Item>
+					<Select.Item value="draft">Draft</Select.Item>
+					<Select.Item value="completed">Completed</Select.Item>
+					<Select.Item value="cancelled">Cancelled</Select.Item>
+				</Select.Content>
+			</Select.Root>
+			<Button
+				variant="outline"
+				size="icon"
+				onclick={loadData}
+				disabled={loading}
+				class="justify-self-start sm:justify-self-auto"
+			>
+				<RefreshIcon class="size-4 {loading ? 'animate-spin' : ''}" />
+			</Button>
 		</div>
-		<div class="flex items-center gap-2">
-			<Input type="date" bind:value={startDate} class="w-36" />
-			<span class="text-muted-foreground">to</span>
-			<Input type="date" bind:value={endDate} class="w-36" />
-		</div>
-		<Select.Root type="single" bind:value={statusFilter}>
-			<Select.Trigger class="w-full sm:w-40">
-				{statusFilter === 'all'
-					? 'All Status'
-					: statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
-			</Select.Trigger>
-			<Select.Content>
-				<Select.Item value="all">All Status</Select.Item>
-				<Select.Item value="draft">Draft</Select.Item>
-				<Select.Item value="completed">Completed</Select.Item>
-				<Select.Item value="cancelled">Cancelled</Select.Item>
-			</Select.Content>
-		</Select.Root>
-		<Button variant="outline" size="icon" onclick={loadData} disabled={loading}>
-			<RefreshIcon class="size-4 {loading ? 'animate-spin' : ''}" />
-		</Button>
 	</div>
 
-	<!-- Table -->
-	<div class="rounded-md border">
+	<!-- Mobile Cards -->
+	<div class="grid gap-3 md:hidden">
+		{#if loading}
+			{#each Array(6) as _, i (i)}
+				<div class="rounded-xl border bg-card p-4">
+					<div class="space-y-3">
+						<Skeleton class="h-5 w-40" />
+						<Skeleton class="h-4 w-28" />
+						<Skeleton class="h-4 w-24" />
+					</div>
+				</div>
+			{/each}
+		{:else if filteredOutgoings.length === 0}
+			<div class="rounded-xl border bg-card p-6 text-center">
+				<p class="text-sm text-muted-foreground">No outgoings found</p>
+				{#if canCreate}
+					<div class="mt-3">
+						<Button variant="outline" size="sm" onclick={openCreateDialog}>
+							<PlusIcon class="size-4" />
+							Create your first outgoing
+						</Button>
+					</div>
+				{/if}
+			</div>
+		{:else}
+			{#each filteredOutgoings as outgoing (outgoing.id)}
+				<div class="rounded-xl border bg-card p-4">
+					<div class="flex items-start justify-between gap-3">
+						<div class="min-w-0">
+							<div class="truncate font-mono text-base font-semibold">{outgoing.doc_number}</div>
+							<div class="mt-1 text-sm text-muted-foreground">
+								{formatDate(outgoing.issued_at)}
+							</div>
+						</div>
+						<Badge variant={getStatusVariant(outgoing.status)}>
+							{outgoing.status.charAt(0).toUpperCase() + outgoing.status.slice(1)}
+						</Badge>
+					</div>
+
+					<div class="mt-3 flex items-center justify-between text-sm">
+						<div class="text-muted-foreground">
+							Items
+							<span class="ml-1 font-medium text-foreground">{outgoing.total_items}</span>
+						</div>
+						<div class="text-muted-foreground">
+							GI
+							<span class="ml-1 font-medium text-foreground">{outgoing.is_gi ? 'Yes' : 'No'}</span>
+						</div>
+					</div>
+
+					<div class="mt-4 flex items-center justify-end gap-2">
+						{#if canUpdate && isEditable(outgoing)}
+							<Button variant="outline" size="sm" onclick={() => openEditDialog(outgoing)}>
+								<PencilIcon class="size-4" />
+								Edit
+							</Button>
+						{/if}
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger>
+								{#snippet child({ props })}
+									<Button variant="ghost" size="icon" {...props}>
+										<DotsVerticalIcon class="size-4" />
+									</Button>
+								{/snippet}
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content align="end">
+								{#if canComplete && outgoing.status === 'draft'}
+									<DropdownMenu.Item onclick={() => handleComplete(outgoing)}>
+										<CheckIcon class="size-4" />
+										Complete
+									</DropdownMenu.Item>
+									<DropdownMenu.Item onclick={() => handleCancel(outgoing)}>
+										<XIcon class="size-4" />
+										Cancel
+									</DropdownMenu.Item>
+								{/if}
+								{#if canConfirmGI && outgoing.status === 'completed' && !outgoing.is_gi}
+									<DropdownMenu.Item onclick={() => handleConfirmGI(outgoing)}>
+										<CircleCheckIcon class="size-4" />
+										Confirm GI
+									</DropdownMenu.Item>
+								{/if}
+								{#if canDelete && outgoing.status === 'draft'}
+									<DropdownMenu.Separator />
+									<DropdownMenu.Item
+										class="text-destructive"
+										onclick={() => openDeleteDialog(outgoing)}
+									>
+										<TrashIcon class="size-4" />
+										Delete
+									</DropdownMenu.Item>
+								{/if}
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
+					</div>
+				</div>
+			{/each}
+		{/if}
+	</div>
+
+	<!-- Desktop Table -->
+	<div class="hidden rounded-xl border bg-card md:block">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
@@ -397,14 +476,18 @@
 	{/if}
 </div>
 
-<!-- Outgoing Form Dialog -->
-<OutgoingFormDialog
-	bind:open={formDialogOpen}
-	outgoing={selectedOutgoing}
-	{parts}
-	docNumber={selectedOutgoing ? selectedOutgoing.doc_number : generateDocNumber()}
-	onSuccess={handleFormSuccess}
-/>
+{#if canCreate}
+	<div class="fixed right-4 bottom-4 z-50 md:hidden">
+		<Button
+			class="size-14 rounded-full p-0 shadow-lg"
+			onclick={openCreateDialog}
+			aria-label="New Outgoing"
+		>
+			<PlusIcon class="size-6" />
+			<span class="sr-only">New Outgoing</span>
+		</Button>
+	</div>
+{/if}
 
 <!-- Delete Confirmation Dialog -->
 <AlertDialog.Root bind:open={deleteDialogOpen}>

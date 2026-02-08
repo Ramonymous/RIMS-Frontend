@@ -1,116 +1,106 @@
 <script lang="ts">
-	import BoxIcon from '@tabler/icons-svelte/icons/box';
-	import DashboardIcon from '@tabler/icons-svelte/icons/dashboard';
-	import HelpIcon from '@tabler/icons-svelte/icons/help';
-	import InnerShadowTopIcon from '@tabler/icons-svelte/icons/inner-shadow-top';
-	import PackageExportIcon from '@tabler/icons-svelte/icons/package-export';
-	import PackageImportIcon from '@tabler/icons-svelte/icons/package-import';
-	import ClipboardListIcon from '@tabler/icons-svelte/icons/clipboard-list';
-	import TruckDeliveryIcon from '@tabler/icons-svelte/icons/truck-delivery';
-	import HistoryIcon from '@tabler/icons-svelte/icons/history';
-	import SettingsIcon from '@tabler/icons-svelte/icons/settings';
-	import UsersIcon from '@tabler/icons-svelte/icons/users';
 	import NavMain from './nav-main.svelte';
-	import NavSecondary from './nav-secondary.svelte';
 	import NavUser from './nav-user.svelte';
+	import TeamSwitcher from './team-switcher.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { ComponentProps } from 'svelte';
 	import { auth } from '$lib/stores/auth.svelte.js';
-	import { resolve } from '$app/paths';
+	import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
+	import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
+	import ArrowLeftRightIcon from '@lucide/svelte/icons/arrow-left-right';
+	import BoxesIcon from '@lucide/svelte/icons/boxes';
+	import UsersIcon from '@lucide/svelte/icons/users';
+	import LayersIcon from '@lucide/svelte/icons/layers';
 
-	const navMain = [
+	let {
+		ref = $bindable(null),
+		collapsible = 'icon',
+		...restProps
+	}: ComponentProps<typeof Sidebar.Root> = $props();
+
+	function hasAnyPermission(prefix: string): boolean {
+		return auth.user?.permissions.some((p) => p.startsWith(`${prefix}.`)) ?? false;
+	}
+
+	const canSeeParts = $derived(hasAnyPermission('parts'));
+	const canSeeUsers = $derived(hasAnyPermission('users'));
+
+	const teams = $derived([
 		{
-			title: 'Dashboard',
-			url: '/app',
-			icon: DashboardIcon
-		},
-		{
-			title: 'Parts',
-			url: '/app/parts',
-			icon: BoxIcon,
-			requiredPermission: 'parts'
-		},
-		{
-			title: 'Receivings',
-			url: '/app/receivings',
-			icon: PackageImportIcon
-		},
-		{
-			title: 'Outgoings',
-			url: '/app/outgoings',
-			icon: PackageExportIcon
-		},
-		{
-			title: 'Check Location',
-			url: '/app/check-location',
-			icon: InnerShadowTopIcon
-		},
-		{
-			title: 'Movements',
-			url: '/app/movements',
-			icon: HistoryIcon
-		},
-		{
-			title: 'Requests',
-			url: '/app/requests',
-			icon: ClipboardListIcon
-		},
-		{
-			title: 'Supply',
-			url: '/app/requests/supply',
-			icon: TruckDeliveryIcon
-		},
-		{
-			title: 'Users',
-			url: '/app/users',
-			icon: UsersIcon,
-			requiredPermission: 'users'
+			name: 'ProjectRIMS',
+			logo: LayersIcon,
+			plan: 'Inventory'
 		}
-	];
+	]);
 
-	const navSecondary = [
-		{
-			title: 'Settings',
-			url: '/app/settings',
-			icon: SettingsIcon
-		},
-		{
-			title: 'Help',
-			url: '/app/help',
-			icon: HelpIcon
-		}
-	];
-
-	// Get user from auth store
 	const user = $derived({
 		name: auth.user?.name ?? 'User',
 		email: auth.user?.email ?? '',
 		avatar: ''
 	});
 
-	let { ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
+	const navMain = $derived([
+		{
+			title: 'Dashboard',
+			url: '/app',
+			icon: LayoutDashboardIcon
+		},
+		{
+			title: 'Operations',
+			url: '#',
+			icon: ClipboardListIcon,
+			items: [
+				{ title: 'Receivings', url: '/app/receivings' },
+				{ title: 'Outgoings', url: '/app/outgoings' },
+				{ title: 'Requests', url: '/app/requests' },
+				{ title: 'Supply', url: '/app/requests/supply' }
+			]
+		},
+		{
+			title: 'Warehouse',
+			url: '#',
+			icon: ArrowLeftRightIcon,
+			items: [
+				{ title: 'Movements', url: '/app/movements' },
+				{ title: 'Check Location', url: '/app/check-location' }
+			]
+		}
+	]);
+
+	const adminNav = $derived([
+		...(canSeeParts
+			? [
+					{
+						title: 'Parts',
+						url: '/app/parts',
+						icon: BoxesIcon
+					}
+				]
+			: []),
+		...(canSeeUsers
+			? [
+					{
+						title: 'Users',
+						url: '/app/users',
+						icon: UsersIcon
+					}
+				]
+			: [])
+	]);
 </script>
 
-<Sidebar.Root collapsible="offcanvas" {...restProps}>
+<Sidebar.Root {collapsible} {...restProps}>
 	<Sidebar.Header>
-		<Sidebar.Menu>
-			<Sidebar.MenuItem>
-				<Sidebar.MenuButton class="data-[slot=sidebar-menu-button]:!p-1.5">
-					{#snippet child({ props })}
-						<a href={resolve('/app')} {...props}>
-							<InnerShadowTopIcon class="!size-5" />
-							<span class="text-base font-semibold">ProjectRIMS</span>
-						</a>
-					{/snippet}
-				</Sidebar.MenuButton>
-			</Sidebar.MenuItem>
-		</Sidebar.Menu>
+		<TeamSwitcher {teams} />
 	</Sidebar.Header>
 	<Sidebar.Content>
-		<NavMain items={navMain} />
-		<NavSecondary items={navSecondary} class="mt-auto" />
+		<NavMain items={navMain} label="Menu" />
+		{#if adminNav.length > 0}
+			<NavMain items={adminNav} label="Admin" />
+		{/if}
 	</Sidebar.Content>
 	<Sidebar.Footer>
 		<NavUser {user} />
 	</Sidebar.Footer>
+	<Sidebar.Rail />
 </Sidebar.Root>

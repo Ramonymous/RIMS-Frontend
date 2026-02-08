@@ -5,6 +5,7 @@
 	import LowStockAlert from '$lib/components/low-stock-alert.svelte';
 	import MovementChart from '$lib/components/movement-chart.svelte';
 	import { getDashboardStats, type DashboardData } from '$lib/api/dashboard.js';
+	import { getParts } from '$lib/api/parts.js';
 	import { toast } from 'svelte-sonner';
 	import type { ApiError } from '$lib/api/index.js';
 
@@ -17,6 +18,29 @@
 		error = null;
 		try {
 			dashboardData = await getDashboardStats();
+
+			// If dashboard stats indicate alerts but the list is empty (or only contains one status),
+			// fetch a small set of parts to populate the panel. Navigation still goes to Movements.
+			if (dashboardData) {
+				const lowStockCount = dashboardData.stats?.parts?.lowStock ?? 0;
+				const outOfStockCount = dashboardData.stats?.parts?.outOfStock ?? 0;
+				const existing = dashboardData.lowStockParts ?? [];
+
+				if (lowStockCount + outOfStockCount > 0 && existing.length === 0) {
+					const [outRes, lowRes] = await Promise.all([
+						outOfStockCount > 0
+							? getParts({ stock_status: 'out_of_stock', limit: 5 })
+							: Promise.resolve({ items: [], total: 0, page: 1, limit: 5 }),
+						lowStockCount > 0
+							? getParts({ stock_status: 'low_stock', limit: 5 })
+							: Promise.resolve({ items: [], total: 0, page: 1, limit: 5 })
+					]);
+
+					const merged = [...outRes.items, ...lowRes.items];
+					const unique = Array.from(new Map(merged.map((p) => [p.id, p])).values()).slice(0, 5);
+					dashboardData = { ...dashboardData, lowStockParts: unique };
+				}
+			}
 		} catch (e) {
 			const apiError = e as ApiError;
 			error = apiError.detail || 'Failed to load dashboard data';
@@ -51,6 +75,11 @@
 			outgoings={dashboardData?.recentOutgoings ?? []}
 			{loading}
 		/>
-		<LowStockAlert parts={dashboardData?.lowStockParts ?? []} {loading} />
+		<LowStockAlert
+			parts={dashboardData?.lowStockParts ?? []}
+			lowStockCount={dashboardData?.stats?.parts?.lowStock ?? 0}
+			outOfStockCount={dashboardData?.stats?.parts?.outOfStock ?? 0}
+			{loading}
+		/>
 	</div>
 </div>

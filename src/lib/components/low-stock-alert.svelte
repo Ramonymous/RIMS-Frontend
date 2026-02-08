@@ -9,10 +9,12 @@
 
 	interface Props {
 		parts: PartResponse[];
+		lowStockCount?: number;
+		outOfStockCount?: number;
 		loading?: boolean;
 	}
 
-	let { parts, loading = false }: Props = $props();
+	let { parts, lowStockCount = 0, outOfStockCount = 0, loading = false }: Props = $props();
 
 	function getStockVariant(status: string): 'destructive' | 'secondary' | 'outline' {
 		switch (status) {
@@ -52,9 +54,21 @@
 			</div>
 		{:else if parts.length === 0}
 			<div class="py-8 text-center">
-				<p class="text-sm text-muted-foreground">
-					No stock alerts - all parts are well stocked! 🎉
-				</p>
+				{#if lowStockCount + outOfStockCount > 0}
+					<p class="text-sm text-muted-foreground">
+						There are stock alerts, but the detailed list is not available here.
+					</p>
+					<div class="mt-3 flex flex-wrap justify-center gap-2">
+						{#if outOfStockCount > 0}
+							<Badge variant="destructive">{outOfStockCount} out of stock</Badge>
+						{/if}
+						{#if lowStockCount > 0}
+							<Badge variant="secondary">{lowStockCount} low stock</Badge>
+						{/if}
+					</div>
+				{:else}
+					<p class="text-sm text-muted-foreground">No stock alerts - all parts are well stocked.</p>
+				{/if}
 			</div>
 		{:else}
 			<div class="space-y-3">
@@ -77,10 +91,41 @@
 					</div>
 				{/each}
 			</div>
-			<Button variant="ghost" size="sm" class="mt-4 w-full" href="/app/parts?status=low_stock">
-				View all low stock parts
-				<ArrowRightIcon class="ml-2 size-4" />
-			</Button>
+			<div class="mt-4 grid gap-2">
+				{#if outOfStockCount > 0}
+					<Button
+						variant="ghost"
+						size="sm"
+						class="w-full justify-between"
+						href="/app/movements?tab=stock&stock_status=out_of_stock"
+					>
+						View out of stock
+						<ArrowRightIcon class="size-4" />
+					</Button>
+				{/if}
+				{#if lowStockCount > 0}
+					<Button
+						variant="ghost"
+						size="sm"
+						class="w-full justify-between"
+						href="/app/movements?tab=stock&stock_status=low_stock"
+					>
+						View low stock
+						<ArrowRightIcon class="size-4" />
+					</Button>
+				{/if}
+				{#if outOfStockCount + lowStockCount === 0}
+					<Button
+						variant="ghost"
+						size="sm"
+						class="w-full justify-between"
+						href="/app/movements?tab=stock"
+					>
+						View stock & movements
+						<ArrowRightIcon class="size-4" />
+					</Button>
+				{/if}
+			</div>
 		{/if}
 	</Card.Content>
 </Card.Root>

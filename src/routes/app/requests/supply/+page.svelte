@@ -458,7 +458,7 @@
 	<title>Supply Requests - ProjectRIMS</title>
 </svelte:head>
 
-<div class="flex min-h-screen flex-col gap-6 bg-muted/30 p-4 md:p-6">
+<div class="flex flex-col gap-6 p-4 md:p-6">
 	<!-- Header & Controls -->
 	<div class="flex flex-col gap-4">
 		<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -841,17 +841,11 @@
 									<input
 										type="number"
 										bind:value={supplyQty}
+										onfocus={(e) => (e.target as HTMLInputElement).select()}
+										onclick={(e) => (e.target as HTMLInputElement).select()}
 										min={1}
 										max={selectedItem ? selectedItem.part.stock : 1}
-										class="h-12 border-2 p-0 text-center text-2xl font-bold focus-visible:border-primary focus-visible:ring-0"
-										oninput={() => {
-											if (!selectedItem) return;
-											if (supplyQty > selectedItem.part.stock) {
-												supplyQty = selectedItem.part.stock;
-											} else if (supplyQty < 1) {
-												supplyQty = 1;
-											}
-										}}
+										class="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-center text-sm ring-offset-background transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 									/>
 								</div>
 								<Button

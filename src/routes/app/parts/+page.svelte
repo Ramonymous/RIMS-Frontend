@@ -192,51 +192,61 @@
 		</div>
 	</div>
 
-	<!-- Filters -->
-	<form class="flex flex-col gap-4 sm:flex-row sm:items-center" onsubmit={handleSearch}>
-		<div class="relative flex-1">
-			<SearchIcon class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-			<Input
-				placeholder="Search by part number, name, or code..."
-				bind:value={searchQuery}
-				class="pl-10"
-				autocomplete="off"
-			/>
-		</div>
-		<Select.Root type="single" bind:value={statusFilter}>
-			<Select.Trigger class="w-full sm:w-48">
-				{statusFilter === 'all'
-					? 'All Status'
-					: statusFilter === 'active'
-						? 'Active'
-						: statusFilter === 'inactive'
-							? 'Inactive'
-							: getStockStatusLabel(statusFilter)}
-			</Select.Trigger>
-			<Select.Content>
-				<Select.Item value="all">All Status</Select.Item>
-				<Select.Item value="active">Active</Select.Item>
-				<Select.Item value="inactive">Inactive</Select.Item>
-				<Select.Item value="in_stock">In Stock</Select.Item>
-				<Select.Item value="low_stock">Low Stock</Select.Item>
-				<Select.Item value="out_of_stock">Out of Stock</Select.Item>
-			</Select.Content>
-		</Select.Root>
-		<select class="rounded border px-2 py-1" bind:value={limit} onchange={handleLimitChange}>
-			{#each pageSizes as size (size)}
-				<option value={size}>{size} / page</option>
-			{/each}
-		</select>
-		<Button type="submit" variant="outline" size="icon" disabled={loading} title="Search">
-			<SearchIcon class="size-4" />
-		</Button>
-		<Button variant="outline" size="icon" onclick={loadParts} disabled={loading} title="Refresh">
-			<RefreshIcon class="size-4 {loading ? 'animate-spin' : ''}" />
-		</Button>
-	</form>
+	<div class="rounded-xl border bg-card p-3 sm:p-4">
+		<!-- Filters -->
+		<form class="grid gap-3 sm:flex sm:flex-row sm:items-center" onsubmit={handleSearch}>
+			<div class="relative flex-1">
+				<SearchIcon class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+				<Input
+					placeholder="Search by part number, name, or code..."
+					bind:value={searchQuery}
+					class="pl-10"
+					autocomplete="off"
+				/>
+			</div>
+			<Select.Root type="single" bind:value={statusFilter}>
+				<Select.Trigger class="w-full sm:w-48">
+					{statusFilter === 'all'
+						? 'All Status'
+						: statusFilter === 'active'
+							? 'Active'
+							: statusFilter === 'inactive'
+								? 'Inactive'
+								: getStockStatusLabel(statusFilter)}
+				</Select.Trigger>
+				<Select.Content>
+					<Select.Item value="all">All Status</Select.Item>
+					<Select.Item value="active">Active</Select.Item>
+					<Select.Item value="inactive">Inactive</Select.Item>
+					<Select.Item value="in_stock">In Stock</Select.Item>
+					<Select.Item value="low_stock">Low Stock</Select.Item>
+					<Select.Item value="out_of_stock">Out of Stock</Select.Item>
+				</Select.Content>
+			</Select.Root>
+			<select
+				class="w-full rounded border bg-background px-3 py-2 text-sm sm:w-auto"
+				bind:value={limit}
+				onchange={handleLimitChange}
+			>
+				{#each pageSizes as size (size)}
+					<option value={size}>{size} / page</option>
+				{/each}
+			</select>
+			<div class="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+				<Button type="submit" variant="outline" disabled={loading} class="w-full">
+					<SearchIcon class="size-4" />
+					Search
+				</Button>
+				<Button variant="outline" onclick={loadParts} disabled={loading} class="w-full">
+					<RefreshIcon class="size-4 {loading ? 'animate-spin' : ''}" />
+					Refresh
+				</Button>
+			</div>
+		</form>
+	</div>
 
 	<!-- Table -->
-	<div class="rounded-md border">
+	<div class="rounded-md border bg-card">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
